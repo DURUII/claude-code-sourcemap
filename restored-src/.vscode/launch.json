@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Bun Run",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "${relativeFile}"],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Bun Debug",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["--inspect", "run", "${relativeFile}"],
+      "console": "integratedTerminal"
+    }
+  ]
+}

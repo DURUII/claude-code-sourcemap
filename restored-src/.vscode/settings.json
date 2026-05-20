@@ -1,0 +1,16 @@
+{
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "deno.enable": false,
+  "deno.lint": false,
+  "files.associations": {
+    "*.ts": "typescript"
+  },
+  "code-runner.executorMap": {
+    "typescript": "cd $dir && bun run $fileName",
+    "javascript": "cd $dir && bun run $fileName",
+    "typescriptreact": "cd $dir && bun run $fileName",
+    "javascriptreact": "cd $dir && bun run $fileName"
+  },
+  "code-runner.defaultLanguage": "typescript",
+  "code-runner.runInTerminal": true
