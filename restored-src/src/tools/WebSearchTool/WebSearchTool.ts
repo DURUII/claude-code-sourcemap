@@ -265,6 +265,7 @@ export const WebSearchTool = buildTool({
     )
 
     const appState = context.getAppState()
+    // 在 Tool 内调用 API 流式请求
     const queryStream = queryModelWithStreaming({
       messages: [userMessage],
       systemPrompt: asSystemPrompt([

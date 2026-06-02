@@ -201,10 +201,11 @@ export type QueryParams = {
 // -- query loop state
 
 // Mutable state carried between loop iterations
+// 状态机
 type State = {
   messages: Message[]
   toolUseContext: ToolUseContext
-  autoCompactTracking: AutoCompactTrackingState | undefined
+  autoCompactTracking: AutoCompactTrackingState | undefined 
   maxOutputTokensRecoveryCount: number
   hasAttemptedReactiveCompact: boolean
   maxOutputTokensOverride: number | undefined

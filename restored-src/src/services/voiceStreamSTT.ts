@@ -153,7 +153,7 @@ export async function connectVoiceStream(
   // Route through conversation-engine with Deepgram Nova 3 (bypassing
   // the server's project_bell_v2_config GrowthBook gate). The server
   // side is anthropics/anthropic#278327 + #281372; this lets us ramp
-  // clients independently.
+  // clients independently. 核心约束是实时，hold-to-talk
   const isNova3 = getFeatureValue_CACHED_MAY_BE_STALE(
     'tengu_cobalt_frost',
     false,

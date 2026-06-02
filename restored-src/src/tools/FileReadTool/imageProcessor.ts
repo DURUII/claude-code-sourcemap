@@ -38,7 +38,7 @@ export async function getImageProcessor(): Promise<SharpFunction> {
   if (imageProcessorModule) {
     return imageProcessorModule.default
   }
-
+  // 原生 napi 模块（macOS 加速 + 原生剪贴板支持）
   if (isInBundledMode()) {
     // Try to load the native image processor first
     try {

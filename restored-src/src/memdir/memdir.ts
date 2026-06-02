@@ -1,7 +1,7 @@
 import { feature } from 'bun:bundle'
 import { join } from 'path'
-import { getFsImplementation } from '../utils/fsOperations.js'
-import { getAutoMemPath, isAutoMemoryEnabled } from './paths.js'
+import { getFsImplementation } from '../utils/fsOperations.js' // 慢操作监控可观测性基础设施；ax 原子性；同一个字符可以有不同的 Unicode 编码方式，Normalization Form Canonical Decomposition/Composition
+import { getAutoMemPath, isAutoMemoryEnabled } from './paths.js' // 要不要记忆、记忆存在哪是正交的
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const teamMemPaths = feature('TEAMMEM')
@@ -18,23 +18,24 @@ import {
 import { GREP_TOOL_NAME } from '../tools/GrepTool/prompt.js'
 import { isReplModeEnabled } from '../tools/REPLTool/constants.js'
 import { logForDebugging } from '../utils/debug.js'
-import { hasEmbeddedSearchTools } from '../utils/embeddedTools.js'
+import { hasEmbeddedSearchTools } from '../utils/embeddedTools.js' // 把 bfs（文件搜索）和 ugrep（内容搜索）内嵌到 bun 二进制，劫持 find/grep
 import { isEnvTruthy } from '../utils/envUtils.js'
 import { formatFileSize } from '../utils/format.js'
 import { getProjectDir } from '../utils/sessionStorage.js'
 import { getInitialSettings } from '../utils/settings/settings.js'
 import {
-  MEMORY_FRONTMATTER_EXAMPLE,
-  TRUSTING_RECALL_SECTION,
-  TYPES_SECTION_INDIVIDUAL,
-  WHAT_NOT_TO_SAVE_SECTION,
-  WHEN_TO_ACCESS_SECTION,
+  MEMORY_FRONTMATTER_EXAMPLE, // 存的时候格式必须对，否则系统无法解析
+  TRUSTING_RECALL_SECTION, // 读到了也不能盲信，要验证
+  TYPES_SECTION_INDIVIDUAL, // 信息有不同种类，处理方式不同
+  WHAT_NOT_TO_SAVE_SECTION, // 有些东西根本不该存
+  WHEN_TO_ACCESS_SECTION, // 什么时候该读、什么时候该忽略
 } from './memoryTypes.js'
 
-export const ENTRYPOINT_NAME = 'MEMORY.md'
+export const ENTRYPOINT_NAME = 'MEMORY.md' // index 页，始终在 system prompt 里，其他  sideQuery 按需加载
 export const MAX_ENTRYPOINT_LINES = 200
 // ~125 chars/line at 200 lines. At p97 today; catches long-line indexes that
 // slip past the line cap (p100 observed: 197KB under 200 lines).
+// 平均每行约 125 个字符
 export const MAX_ENTRYPOINT_BYTES = 25_000
 const AUTO_MEM_DISPLAY_NAME = 'auto memory'
 
@@ -76,12 +77,12 @@ export function truncateEntrypointContent(raw: string): EntrypointTruncation {
   }
 
   let truncated = wasLineTruncated
-    ? contentLines.slice(0, MAX_ENTRYPOINT_LINES).join('\n')
+    ? contentLines.slice(0, MAX_ENTRYPOINT_LINES).join('\n') // 先 first 200 lines
     : trimmed
 
   if (truncated.length > MAX_ENTRYPOINT_BYTES) {
     const cutAt = truncated.lastIndexOf('\n', MAX_ENTRYPOINT_BYTES)
-    truncated = truncated.slice(0, cutAt > 0 ? cutAt : MAX_ENTRYPOINT_BYTES)
+    truncated = truncated.slice(0, cutAt > 0 ? cutAt : MAX_ENTRYPOINT_BYTES) // 再 25000 bytes
   }
 
   const reason =
@@ -99,7 +100,7 @@ export function truncateEntrypointContent(raw: string): EntrypointTruncation {
     byteCount,
     wasLineTruncated,
     wasByteTruncated,
-  }
+  } // self-healing: 每个条目一行不超过 200 字符, 内容细节放到独立 topic 文件里, 避免 MEMORY.md 再次膨胀被截断
 }
 
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -112,6 +113,9 @@ const teamMemPrompts = feature('TEAMMEM')
  * Shared guidance text appended to each memory directory prompt line.
  * Shipped because Claude was burning turns on `ls`/`mkdir -p` before writing.
  * Harness guarantees the directory exists via ensureMemoryDirExists().
+ * 收到「写入 X 目录」的指令时，会先 ls 检查目录是否存在，
+ * 再 mkdir -p 创建，最后才 Write。
+ * 但实际上这些目录已经存在（比如 ~/.claude/projects/.../memory/），于是每次对话都会重复这个无意义的检查+创建流程。
  */
 export const DIR_EXISTS_GUIDANCE =
   'This directory already exists — write to it directly with the Write tool (do not run mkdir or check for its existence).'
@@ -127,6 +131,7 @@ export const DIRS_EXIST_GUIDANCE =
  * try/catch needed for the happy path.
  */
 export async function ensureMemoryDirExists(memoryDir: string): Promise<void> {
+  // 实际只会被调一次，但即使多次调用也不会出问题
   const fs = getFsImplementation()
   try {
     await fs.mkdir(memoryDir)
@@ -159,6 +164,7 @@ function logMemoryDirCounts(
     | AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   >,
 ): void {
+  // 观测用户 memory 目录的膨胀趋势
   const fs = getFsImplementation()
   void fs.readdir(memoryDir).then(
     dirents => {
@@ -234,7 +240,7 @@ export function buildMemoryLines(
       ]
 
   const lines: string[] = [
-    `# ${displayName}`,
+    `# ${displayName}`, // 
     '',
     `You have a persistent, file-based memory system at \`${memoryDir}\`. ${DIR_EXISTS_GUIDANCE}`,
     '',
@@ -335,17 +341,17 @@ function buildAssistantDailyLogPrompt(skipIndex = false): string {
   const logPathPattern = join(memoryDir, 'logs', 'YYYY', 'MM', 'YYYY-MM-DD.md')
 
   const lines: string[] = [
-    '# auto memory',
+    '# auto memory', // 'auto memory' 主 Agent，'Persistent Agent Memory' 子 Agent
     '',
-    `You have a persistent, file-based memory system found at: \`${memoryDir}\``,
+    `You have a persistent, file-based memory system found at: \`${memoryDir}\``, // memory-store
     '',
     "This session is long-lived. As you work, record anything worth remembering by **appending** to today's daily log file:",
     '',
-    `\`${logPathPattern}\``,
+    `\`${logPathPattern}\``, // diary, KAIROS 模式下是日期日志 nightly /dream 蒸馏; Persistent Agent Memory 是传统的 MEMORY.md 索引 + 主题文件
     '',
     "Substitute today's date (from `currentDate` in your context) for `YYYY-MM-DD`. When the date rolls over mid-session, start appending to the new day's file.",
     '',
-    'Write each entry as a short timestamped bullet. Create the file (and parent directories) on first write if it does not exist. Do not rewrite or reorganize the log — it is append-only. A separate nightly process distills these logs into `MEMORY.md` and topic files.',
+    'Write each entry as a short timestamped bullet. Create the file (and parent directories) on first write if it does not exist. Do not rewrite or reorganize the log — it is append-only. A separate nightly process distills these logs into `MEMORY.md` and topic files.', // consolidate, auto-dream forked agent
     '',
     '## What to log',
     '- User corrections and preferences ("use bun, not npm"; "stop summarizing diffs")',
@@ -362,8 +368,8 @@ function buildAssistantDailyLogPrompt(skipIndex = false): string {
           `## ${ENTRYPOINT_NAME}`,
           `\`${ENTRYPOINT_NAME}\` is the distilled index (maintained nightly from your logs) and is loaded into your context automatically. Read it for orientation, but do not edit it directly — record new information in today's log instead.`,
           '',
-        ]),
-    ...buildSearchingPastContextSection(memoryDir),
+        ]), // MEMORY.md
+    ...buildSearchingPastContextSection(memoryDir), // 先搜 memory 目录的 md 文件，搜不到再搜 transcript 的 jsonl
   ]
 
   return lines.join('\n')
@@ -373,7 +379,7 @@ function buildAssistantDailyLogPrompt(skipIndex = false): string {
  * Build the "Searching past context" section if the feature gate is enabled.
  */
 export function buildSearchingPastContextSection(autoMemDir: string): string[] {
-  if (!getFeatureValue_CACHED_MAY_BE_STALE('tengu_coral_fern', false)) {
+  if (!getFeatureValue_CACHED_MAY_BE_STALE('tengu_coral_fern', false)) { // 灰度
     return []
   }
   const projectDir = getProjectDir(getOriginalCwd())
@@ -402,7 +408,7 @@ export function buildSearchingPastContextSection(autoMemDir: string): string[] {
     transcriptSearch,
     '```',
     'Use narrow search terms (error messages, file paths, function names) rather than broad keywords.',
-    '',
+    '', // meta feature: 知道有记忆、怎么搜记忆、以及什么先搜什么后搜
   ]
 }
 
@@ -434,7 +440,7 @@ export async function loadMemoryPrompt(): Promise<string | null> {
       memory_type:
         'auto' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
-    return buildAssistantDailyLogPrompt(skipIndex)
+    return buildAssistantDailyLogPrompt(skipIndex) // 追加
   }
 
   // Cowork injects memory-policy text via env var; thread into all builders.
@@ -465,7 +471,7 @@ export async function loadMemoryPrompt(): Promise<string | null> {
         memory_type:
           'team' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
-      return teamMemPrompts!.buildCombinedMemoryPrompt(
+      return teamMemPrompts!.buildCombinedMemoryPrompt( //  共享的版本化的带安全防护的团队知识库
         extraGuidelines,
         skipIndex,
       )

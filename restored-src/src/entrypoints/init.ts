@@ -71,7 +71,7 @@ export const init = memoize(async (): Promise<void> => {
     // Apply only safe environment variables before trust dialog
     // Full environment variables are applied after trust is established
     const envVarsStart = Date.now()
-    applySafeConfigEnvironmentVariables()
+    applySafeConfigEnvironmentVariables() // 注入安全的 env（ANTHROPIC_BASE_URL 等）
 
     // Apply NODE_EXTRA_CA_CERTS from settings.json to process.env early,
     // before any TLS connections. Bun caches the TLS cert store at boot

@@ -3,7 +3,7 @@ import { join } from 'path'
 import {
   getCurrentProjectConfig,
   saveCurrentProjectConfig,
-} from './utils/config.js'
+} from './utils/config.js' // 读时修复，引用相等性跳过，Write-through 缓存，Auth 丢失保护， 写前备份 + 节流，默认值过滤
 import { getCwd } from './utils/cwd.js'
 import { isDirEmpty } from './utils/file.js'
 import { getFsImplementation } from './utils/fsOperations.js'
@@ -63,9 +63,9 @@ export function maybeMarkProjectOnboardingComplete(): void {
 export const shouldShowProjectOnboarding = memoize((): boolean => {
   const projectConfig = getCurrentProjectConfig()
   // Short-circuit on cached config before isProjectOnboardingComplete()
-  // hits the filesystem — this runs during first render.
+  // hits the filesystem — this runs during first render. 文件系统目录是否为空？是否有 CLAUDE.md？
   if (
-    projectConfig.hasCompletedProjectOnboarding ||
+    projectConfig.hasCompletedProjectOnboarding || 
     projectConfig.projectOnboardingSeenCount >= 4 ||
     process.env.IS_DEMO
   ) {

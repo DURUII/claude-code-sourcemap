@@ -16,7 +16,7 @@ import { getProjectDir } from '../../utils/sessionStorage.js'
 const LOCK_FILE = '.consolidate-lock'
 
 // Stale past this even if the PID is live (PID reuse guard).
-const HOLDER_STALE_MS = 60 * 60 * 1000
+const HOLDER_STALE_MS = 60 * 60 * 1000 // 锁超时常量，无论 PID 是否存活，都认为锁已过期
 
 function lockPath(): string {
   return join(getAutoMemPath(), LOCK_FILE)
@@ -43,7 +43,7 @@ export async function readLastConsolidatedAt(): Promise<number> {
  *   Failure → rollbackConsolidationLock(priorMtime) rewinds mtime.
  *   Crash   → mtime stuck, dead PID → next process reclaims.
  */
-export async function tryAcquireConsolidationLock(): Promise<number | null> {
+export async function tryAcquireConsolidationLock(): Promise<number | null> { // 竞态获取锁
   const path = lockPath()
 
   let mtimeMs: number | undefined
@@ -52,7 +52,7 @@ export async function tryAcquireConsolidationLock(): Promise<number | null> {
     const [s, raw] = await Promise.all([stat(path), readFile(path, 'utf8')])
     mtimeMs = s.mtimeMs
     const parsed = parseInt(raw.trim(), 10)
-    holderPid = Number.isFinite(parsed) ? parsed : undefined
+    holderPid = Number.isFinite(parsed) ? parsed : undefined // 写入当前进程的 PID 字符串
   } catch {
     // ENOENT — no prior lock.
   }

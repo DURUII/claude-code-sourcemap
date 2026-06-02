@@ -1,104 +1,111 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
-import { type as osType, version as osVersion, release as osRelease } from 'os'
-import { env } from '../utils/env.js'
+import { type as osType, version as osVersion, release as osRelease } from 'os' // platform matters, e.g. uname -sr
+import { env } from '../utils/env.js' // platform matters
 import { getIsGit } from '../utils/git.js'
 import { getCwd } from '../utils/cwd.js'
-import { getIsNonInteractiveSession } from '../bootstrap/state.js'
-import { getCurrentWorktreeSession } from '../utils/worktree.js'
-import { getSessionStartDate } from './common.js'
-import { getInitialSettings } from '../utils/settings/settings.js'
+import { getIsNonInteractiveSession } from '../bootstrap/state.js' // can suggest user to use ! for bash command
+import { getCurrentWorktreeSession } from '../utils/worktree.js' // git worktree, 切换提示，退出清理？
+import { getSessionStartDate } from './common.js'  // 会话启动时间戳，本地时区的 ISO 格式日期，需要 memoize 避免每次 API 调用都重新计算而破坏 prompt 缓存
+import { getInitialSettings } from '../utils/settings/settings.js' // 对应 ~/.claude/settings.json，autoMemory, skipWebFetchpreflight, autoDream, agent ...
 import {
   AGENT_TOOL_NAME,
   VERIFICATION_AGENT_TYPE,
-} from '../tools/AgentTool/constants.js'
+} from '../tools/AgentTool/constants.js' // agent is a special tool, verification agent is spawned when non-trivial tasks are done
 import { FILE_WRITE_TOOL_NAME } from '../tools/FileWriteTool/prompt.js'
 import { FILE_READ_TOOL_NAME } from '../tools/FileReadTool/prompt.js'
 import { FILE_EDIT_TOOL_NAME } from '../tools/FileEditTool/constants.js'
-import { TODO_WRITE_TOOL_NAME } from '../tools/TodoWriteTool/constants.js'
-import { TASK_CREATE_TOOL_NAME } from '../tools/TaskCreateTool/constants.js'
-import type { Tools } from '../Tool.js'
-import type { Command } from '../types/command.js'
+import { TODO_WRITE_TOOL_NAME } from '../tools/TodoWriteTool/constants.js' // TodoWrite
+import { TASK_CREATE_TOOL_NAME } from '../tools/TaskCreateTool/constants.js' // TaskCreate
+import type { Tools } from '../Tool.js' // 类型别名，Tool 对象有运行时 Zod schema
+import type { Command } from '../types/command.js' // 类型注解, prompt, local, local-jsx? 
 import { BASH_TOOL_NAME } from '../tools/BashTool/toolName.js'
 import {
   getCanonicalName,
   getMarketingNameForModel,
-} from '../utils/model/model.js'
-import { getSkillToolCommands } from 'src/commands.js'
+} from '../utils/model/model.js' // 提取模型系列名, knowledge cut off matters
+import { getSkillToolCommands } from 'src/commands.js' // 从 cwd 目录下收集所有可用的 skill/command, 把对应的使用说明注入系统提示词
 import { SKILL_TOOL_NAME } from '../tools/SkillTool/constants.js'
-import { getOutputStyleConfig } from './outputStyles.js'
+import { getOutputStyleConfig } from './outputStyles.js' // default, Explanatory, Learning ...
 import type {
   MCPServerConnection,
   ConnectedMCPServer,
-} from '../services/mcp/types.js'
-import { GLOB_TOOL_NAME } from 'src/tools/GlobTool/prompt.js'
-import { GREP_TOOL_NAME } from 'src/tools/GrepTool/prompt.js'
-import { hasEmbeddedSearchTools } from 'src/utils/embeddedTools.js'
+} from '../services/mcp/types.js' // MCP server 是给 Claude 提供额外工具/能力的外部服务
+import { GLOB_TOOL_NAME } from 'src/tools/GlobTool/prompt.js' // 用 Glob，不要用 find 或 ls
+import { GREP_TOOL_NAME } from 'src/tools/GrepTool/prompt.js' // 用 Glob，搜内容用 Grep, 跨平台一致 + 可追踪可控权
+import { hasEmbeddedSearchTools } from 'src/utils/embeddedTools.js' // 使用 bfs/ugrep 
 import { ASK_USER_QUESTION_TOOL_NAME } from '../tools/AskUserQuestionTool/prompt.js'
 import {
   EXPLORE_AGENT,
   EXPLORE_AGENT_MIN_QUERIES,
-} from 'src/tools/AgentTool/built-in/exploreAgent.js'
+} from 'src/tools/AgentTool/built-in/exploreAgent.js' // feishu doc
 import { areExplorePlanAgentsEnabled } from 'src/tools/AgentTool/builtInAgents.js'
 import {
   isScratchpadEnabled,
   getScratchpadDir,
-} from '../utils/permissions/filesystem.js'
-import { isEnvTruthy } from '../utils/envUtils.js'
-import { isReplModeEnabled } from '../tools/REPLTool/constants.js'
+} from '../utils/permissions/filesystem.js' // Scratchpad 是 Claude Code 的临时工作目录（草稿纸）
+import { isEnvTruthy } from '../utils/envUtils.js' // 字符串值转成布尔值
+import { isReplModeEnabled } from '../tools/REPLTool/constants.js' // 通过统一的 REPL 工具来操作，不直接调 Read/Write/Bash，getTools()
 import { feature } from 'bun:bundle'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js' // 灰度功能开关，远程配置（Apollo/Hive like, feature flags，run experiments）,热发布, 环境隔离,  配置即服务
 import { shouldUseGlobalCacheScope } from '../utils/betas.js'
-import { isForkSubagentEnabled } from '../tools/AgentTool/forkSubagent.js'
+import { isForkSubagentEnabled } from '../tools/AgentTool/forkSubagent.js' // 普通 Agent 是空白 slate，继承父进程对话上下文
 import {
-  systemPromptSection,
+  systemPromptSection, // 缓存清除：/clear 或 /compact
   DANGEROUS_uncachedSystemPromptSection,
   resolveSystemPromptSections,
 } from './systemPromptSections.js'
 import { SLEEP_TOOL_NAME } from '../tools/SleepTool/prompt.js'
-import { TICK_TAG } from './xml.js'
+import { TICK_TAG } from './xml.js' //  KAIROS 模式心跳
 import { logForDebugging } from '../utils/debug.js'
-import { loadMemoryPrompt } from '../memdir/memdir.js'
-import { isUndercover } from '../utils/undercover.js'
-import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js'
+import { loadMemoryPrompt } from '../memdir/memdir.js' // KAIROS 每日日志； TEAMMEM 团队记忆；普通自动记忆
+import { isUndercover } from '../utils/undercover.js' // ANY Anthropic-internal information
+import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js' // delta attachment
 
 // Dead code elimination: conditional imports for feature-gated modules
 /* eslint-disable @typescript-eslint/no-require-imports */
 const getCachedMCConfigForFRC = feature('CACHED_MICROCOMPACT')
   ? (
-      require('../services/compact/cachedMCConfig.js') as typeof import('../services/compact/cachedMCConfig.js')
-    ).getCachedMCConfig
+    require('../services/compact/cachedMCConfig.js') as typeof import('../services/compact/cachedMCConfig.js')
+  ).getCachedMCConfig
   : null
 
 const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
     ? require('../proactive/index.js')
     : null
+
+// SendUserMessage: focus on export const, schema, prompt
 const BRIEF_PROACTIVE_SECTION: string | null =
   feature('KAIROS') || feature('KAIROS_BRIEF')
     ? (
-        require('../tools/BriefTool/prompt.js') as typeof import('../tools/BriefTool/prompt.js')
-      ).BRIEF_PROACTIVE_SECTION
+      require('../tools/BriefTool/prompt.js') as typeof import('../tools/BriefTool/prompt.js') // 按需加载, 不相关模块隔离
+    ).BRIEF_PROACTIVE_SECTION
     : null
 const briefToolModule =
   feature('KAIROS') || feature('KAIROS_BRIEF')
     ? (require('../tools/BriefTool/BriefTool.js') as typeof import('../tools/BriefTool/BriefTool.js'))
     : null
+
+// 当系统自动推荐的 skills 不够时，搜 skill；对远程 skill，必须先被 discover 过才能执行
 const DISCOVER_SKILLS_TOOL_NAME: string | null = feature(
   'EXPERIMENTAL_SKILL_SEARCH',
 )
   ? (
-      require('../tools/DiscoverSkillsTool/prompt.js') as typeof import('../tools/DiscoverSkillsTool/prompt.js')
-    ).DISCOVER_SKILLS_TOOL_NAME
+    require('../tools/DiscoverSkillsTool/prompt.js') as typeof import('../tools/DiscoverSkillsTool/prompt.js')
+  ).DISCOVER_SKILLS_TOOL_NAME
   : null
+
 // Capture the module (not .isSkillSearchEnabled directly) so spyOn() in tests
 // patches what we actually call — a captured function ref would point past the spy.
+// 翻译：测试里我们会用 spyOn() 改模块对象上的函数，所以这里要保存功能检查模块对象 ，不要提前把函数引用拎出来
 const skillSearchFeatureCheck = feature('EXPERIMENTAL_SKILL_SEARCH')
   ? (require('../services/skillSearch/featureCheck.js') as typeof import('../services/skillSearch/featureCheck.js'))
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
-import type { OutputStyleConfig } from './outputStyles.js'
-import { CYBER_RISK_INSTRUCTION } from './cyberRiskInstruction.js'
+import type { OutputStyleConfig } from './outputStyles.js' // 只给 TypeScript 做类型检查用
+import { CYBER_RISK_INSTRUCTION } from './cyberRiskInstruction.js' // 常量：安全策略文本
 
+// 模块级可见性
 export const CLAUDE_CODE_DOCS_MAP_URL =
   'https://code.claude.com/docs/en/claude_code_docs_map.md'
 
@@ -110,6 +117,9 @@ export const CLAUDE_CODE_DOCS_MAP_URL =
  * WARNING: Do not remove or reorder this marker without updating cache logic in:
  * - src/utils/api.ts (splitSysPromptPrefix)
  * - src/services/api/claude.ts (buildSystemPromptBlocks)
+ * 
+ * P.S. cross-org cacheable 这段内容足够通用且不含用户会话私有信息，可以在更大范围复用缓存键；BOUNDARY 之前静态、通用、可全局缓存
+ * https://platform.claude.com/docs/en/build-with-claude/prompt-caching
  */
 export const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
   '__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__'
@@ -117,13 +127,14 @@ export const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
 // @[MODEL LAUNCH]: Update the latest frontier model.
 const FRONTIER_MODEL_NAME = 'Claude Opus 4.6'
 
-// @[MODEL LAUNCH]: Update the model family IDs below to the latest in each tier.
+// @[MODEL LAUNCH]: Update the model family IDs below to the latest in each tier 阶层.
 const CLAUDE_4_5_OR_4_6_MODEL_IDS = {
   opus: 'claude-opus-4-6',
   sonnet: 'claude-sonnet-4-6',
   haiku: 'claude-haiku-4-5-20251001',
 }
 
+// https://mp.weixin.qq.com/s/Y9Wz88D-jjCM9cmh9-zXwQ
 function getHooksSection(): string {
   return `Users may configure 'hooks', shell commands that execute in response to events like tool calls, in settings. Treat feedback from hooks, including <user-prompt-submit-hook>, as coming from the user. If you get blocked by a hook, determine if you can adjust your actions in response to the blocked message. If not, ask the user to check their hooks configuration.`
 }
@@ -134,8 +145,10 @@ function getSystemRemindersSection(): string {
 }
 
 function getAntModelOverrideSection(): string | null {
+  // ant && !undercover
   if (process.env.USER_TYPE !== 'ant') return null
   if (isUndercover()) return null
+  // restored-src/src/utils/model/antModels.ts
   return getAntModelOverrideConfig()?.defaultSystemPromptSuffix || null
 }
 
@@ -152,18 +165,19 @@ function getOutputStyleSection(
   outputStyleConfig: OutputStyleConfig | null,
 ): string | null {
   if (outputStyleConfig === null) return null
-
+  // default, Explanatory, Learning 可扩展
   return `# Output Style: ${outputStyleConfig.name}
 ${outputStyleConfig.prompt}`
 }
 
 function getMcpInstructionsSection(
-  mcpClients: MCPServerConnection[] | undefined,
+  mcpClients: MCPServerConnection[] | undefined, // Q: MCP 连接状态？失败？
 ): string | null {
   if (!mcpClients || mcpClients.length === 0) return null
   return getMcpInstructions(mcpClients)
 }
 
+// 加 bullet 前缀格式化
 export function prependBullets(items: Array<string | string[]>): string[] {
   return items.flatMap(item =>
     Array.isArray(item)
@@ -172,17 +186,25 @@ export function prependBullets(items: Array<string | string[]>): string[] {
   )
 }
 
+// Sections
 function getSimpleIntroSection(
   outputStyleConfig: OutputStyleConfig | null,
 ): string {
   // eslint-disable-next-line custom-rules/prompt-spacing
   return `
-You are an interactive agent that helps users ${outputStyleConfig !== null ? 'according to your "Output Style" below, which describes how you should respond to user queries.' : 'with software engineering tasks.'} Use the instructions below and the tools available to you to assist the user.
+You are an interactive agent 
+that helps users ${outputStyleConfig !== null ? 
+  'according to your "Output Style" below, which describes how you should respond to user queries.' : 
+  'with software engineering tasks.'} 
+Use the instructions below and the tools available to you to assist the user.
 
 ${CYBER_RISK_INSTRUCTION}
 IMPORTANT: You must NEVER generate or guess URLs for the user unless you are confident that the URLs are for helping the user with programming. You may use URLs provided by the user in their messages or local files.`
-}
+} // https://www.reddit.com/r/LocalLLaMA/comments/1s9t3ud/what_are_the_best_uncensored_unrestricted_ai
 
+/**
+ * commonmark 规范：https://spec.commonmark.org/0.31.2/
+ */
 function getSimpleSystemSection(): string {
   const items = [
     `All text you output outside of tool use is displayed to the user. Output text to communicate with the user. You can use Github-flavored markdown for formatting, and will be rendered in a monospace font using the CommonMark specification.`,
@@ -204,12 +226,12 @@ function getSimpleDoingTasksSection(): string {
     // @[MODEL LAUNCH]: Update comment writing for Capybara — remove or soften once the model stops over-commenting by default
     ...(process.env.USER_TYPE === 'ant'
       ? [
-          `Default to writing no comments. Only add one when the WHY is non-obvious: a hidden constraint, a subtle invariant, a workaround for a specific bug, behavior that would surprise a reader. If removing the comment wouldn't confuse a future reader, don't write it.`,
-          `Don't explain WHAT the code does, since well-named identifiers already do that. Don't reference the current task, fix, or callers ("used by X", "added for the Y flow", "handles the case from issue #123"), since those belong in the PR description and rot as the codebase evolves.`,
-          `Don't remove existing comments unless you're removing the code they describe or you know they're wrong. A comment that looks pointless to you may encode a constraint or a lesson from a past bug that isn't visible in the current diff.`,
-          // @[MODEL LAUNCH]: capy v8 thoroughness counterweight (PR #24302) — un-gate once validated on external via A/B
-          `Before reporting a task complete, verify it actually works: run the test, execute the script, check the output. Minimum complexity means no gold-plating, not skipping the finish line. If you can't verify (no test exists, can't run the code), say so explicitly rather than claiming success.`,
-        ]
+        `Default to writing no comments. Only add one when the WHY is non-obvious: a hidden constraint, a subtle invariant, a workaround for a specific bug, behavior that would surprise a reader. If removing the comment wouldn't confuse a future reader, don't write it.`,
+        `Don't explain WHAT the code does, since well-named identifiers already do that. Don't reference the current task, fix, or callers ("used by X", "added for the Y flow", "handles the case from issue #123"), since those belong in the PR description and rot as the codebase evolves.`,
+        `Don't remove existing comments unless you're removing the code they describe or you know they're wrong. A comment that looks pointless to you may encode a constraint or a lesson from a past bug that isn't visible in the current diff.`,
+        // @[MODEL LAUNCH]: capy v8 thoroughness counterweight (PR #24302) — un-gate once validated on external via A/B
+        `Before reporting a task complete, verify it actually works: run the test, execute the script, check the output. Minimum complexity means no gold-plating, not skipping the finish line. If you can't verify (no test exists, can't run the code), say so explicitly rather than claiming success.`,
+      ]
       : []),
   ]
 
@@ -224,8 +246,8 @@ function getSimpleDoingTasksSection(): string {
     // @[MODEL LAUNCH]: capy v8 assertiveness counterweight (PR #24302) — un-gate once validated on external via A/B
     ...(process.env.USER_TYPE === 'ant'
       ? [
-          `If you notice the user's request is based on a misconception, or spot a bug adjacent to what they asked about, say so. You're a collaborator, not just an executor—users benefit from your judgment, not just your compliance.`,
-        ]
+        `If you notice the user's request is based on a misconception, or spot a bug adjacent to what they asked about, say so. You're a collaborator, not just an executor—users benefit from your judgment, not just your compliance.`,
+      ]
       : []),
     `In general, do not propose changes to code you haven't read. If a user asks about or wants you to modify a file, read it first. Understand existing code before suggesting modifications.`,
     `Do not create files unless they're absolutely necessary for achieving your goal. Generally prefer editing an existing file to creating a new one, as this prevents file bloat and builds on existing work more effectively.`,
@@ -237,13 +259,13 @@ function getSimpleDoingTasksSection(): string {
     // @[MODEL LAUNCH]: False-claims mitigation for Capybara v8 (29-30% FC rate vs v4's 16.7%)
     ...(process.env.USER_TYPE === 'ant'
       ? [
-          `Report outcomes faithfully: if tests fail, say so with the relevant output; if you did not run a verification step, say that rather than implying it succeeded. Never claim "all tests pass" when output shows failures, never suppress or simplify failing checks (tests, lints, type errors) to manufacture a green result, and never characterize incomplete or broken work as done. Equally, when a check did pass or a task is complete, state it plainly — do not hedge confirmed results with unnecessary disclaimers, downgrade finished work to "partial," or re-verify things you already checked. The goal is an accurate report, not a defensive one.`,
-        ]
+        `Report outcomes faithfully: if tests fail, say so with the relevant output; if you did not run a verification step, say that rather than implying it succeeded. Never claim "all tests pass" when output shows failures, never suppress or simplify failing checks (tests, lints, type errors) to manufacture a green result, and never characterize incomplete or broken work as done. Equally, when a check did pass or a task is complete, state it plainly — do not hedge confirmed results with unnecessary disclaimers, downgrade finished work to "partial," or re-verify things you already checked. The goal is an accurate report, not a defensive one.`,
+      ]
       : []),
     ...(process.env.USER_TYPE === 'ant'
       ? [
-          `If the user reports a bug, slowness, or unexpected behavior with Claude Code itself (as opposed to asking you to fix their own code), recommend the appropriate slash command: /issue for model-related problems (odd outputs, wrong tool choices, hallucinations, refusals), or /share to upload the full session transcript for product bugs, crashes, slowness, or general issues. Only recommend these when the user is describing a problem with Claude Code. After /share produces a ccshare link, if you have a Slack MCP tool available, offer to post the link to #claude-code-feedback (channel ID C07VBSHV7EV) for the user.`,
-        ]
+        `If the user reports a bug, slowness, or unexpected behavior with Claude Code itself (as opposed to asking you to fix their own code), recommend the appropriate slash command: /issue for model-related problems (odd outputs, wrong tool choices, hallucinations, refusals), or /share to upload the full session transcript for product bugs, crashes, slowness, or general issues. Only recommend these when the user is describing a problem with Claude Code. After /share produces a ccshare link, if you have a Slack MCP tool available, offer to post the link to #claude-code-feedback (channel ID C07VBSHV7EV) for the user.`,
+      ]
       : []),
     `If the user asks for help or wants to give feedback inform them of the following:`,
     userHelpSubitems,
@@ -295,9 +317,9 @@ function getUsingYourToolsSection(enabledTools: Set<string>): string {
     ...(embedded
       ? []
       : [
-          `To search for files use ${GLOB_TOOL_NAME} instead of find or ls`,
-          `To search the content of files, use ${GREP_TOOL_NAME} instead of grep or rg`,
-        ]),
+        `To search for files use ${GLOB_TOOL_NAME} instead of find or ls`,
+        `To search the content of files, use ${GREP_TOOL_NAME} instead of grep or rg`,
+      ]),
     `Reserve using the ${BASH_TOOL_NAME} exclusively for system commands and terminal operations that require shell execution. If you are unsure and there is a relevant dedicated tool, default to using the dedicated tool and only fallback on using the ${BASH_TOOL_NAME} tool for these if it is absolutely necessary.`,
   ]
 
@@ -348,6 +370,25 @@ function getDiscoverSkillsGuidance(): string | null {
  *
  * outputStyleConfig intentionally NOT moved here — identity framing lives
  * in the static intro pending eval.
+ * 
+ * 系统提示词里 boundary 之前 的静态内容可做全局复用缓存
+ * 组装时会把 boundary 前后的块拆开：前面给 cacheScope:'global' ，后面不全局缓存
+ * 本来应该是一个稳定前缀，却因为放了会话条件分支，变成很多不同版本前缀，每个版本各自一个缓存键，命中率下降。
+ * 
+ * 这个区域里每个 if /条件都像一个“bit”（0/1 开关），会改变前缀文本，从而改变前缀哈希。
+ * 假设有 N 个独立开关，理论上会有 2^N 种前缀版本（哈希变体）。
+ * 例：3 个开关 → 8 种前缀；8 个开关 → 256 种前缀。
+ * “Blake2b prefix hash variants”可以理解为：后端对前缀文本做 Blake2b 哈希作为缓存键的一部分；文本一变，哈希就变，缓存就分叉了。
+ * 
+ * 这个函数就是被刻意放在 boundary 后的动态区，目的就是避免前缀被这些 runtime 条件污染。
+ * 
+ * outputStyleConfig 故意没搬到这里 （这个 session-specific 动态段），因为“身份框架（identity framing）”目前还放在静态 intro，等后续评估。
+ * 
+ * intro 里有身份表达，且会根据 outputStyleConfig 改一句话： prompts.ts 。
+ * 具体 Output Style 内容又在动态段里： prompts.ts 。
+ * 所以这是一个“保守策略”：
+ * 为了缓存，尽量把会话变化项放 boundary 后；
+ * 但有些“身份/行为 framing”对模型表现敏感，先保留在静态前言，待实验验证后再决定是否继续迁移。
  */
 function getSessionSpecificGuidanceSection(
   enabledTools: Set<string>,
@@ -370,35 +411,45 @@ function getSessionSpecificGuidanceSection(
       : `If you need the user to run a shell command themselves (e.g., an interactive login like \`gcloud auth login\`), suggest they type \`! <command>\` in the prompt — the \`!\` prefix runs the command in this session so its output lands directly in the conversation.`,
     // isForkSubagentEnabled() reads getIsNonInteractiveSession() — must be
     // post-boundary or it fragments the static prefix on session type.
+    //
+    // 提示词缓存稳定性保护，这类会话相关分支只影响动态尾部，不污染可复用的静态前缀
+    // 
+    // 指的是 userInvocable 这个属性：是否允许用户直接输入 /skill-name 调用。
+    // 如果 userInvocable === false ，用户直接 /xxx 会被拦截，并提示“只能由 Claude 调用” processSlashCommand.tsx:L533-L544 。
+    // skill 的构建里也会把这类标成 isHidden loadSkillsDir.ts:L216-L219 、 loadSkillsDir.ts:L329-L335 。
+    // 所以你看到那句“Only use SKILL_TOOL_NAME for skills listed in its user-invocable skills section”，本质是在防模型乱猜命令名/调用内置 CLI 命令。
+    // 注：这句文案和当前实现细节有点“历史味道”，但意图是 只调用明确列出的技能，不要幻想命令 。
     hasAgentTool ? getAgentToolSection() : null,
     ...(hasAgentTool &&
-    areExplorePlanAgentsEnabled() &&
-    !isForkSubagentEnabled()
+      areExplorePlanAgentsEnabled() &&
+      !isForkSubagentEnabled()
       ? [
-          `For simple, directed codebase searches (e.g. for a specific file/class/function) use ${searchTools} directly.`,
-          `For broader codebase exploration and deep research, use the ${AGENT_TOOL_NAME} tool with subagent_type=${EXPLORE_AGENT.agentType}. This is slower than using ${searchTools} directly, so use this only when a simple, directed search proves to be insufficient or when your task will clearly require more than ${EXPLORE_AGENT_MIN_QUERIES} queries.`,
-        ]
+        `For simple, directed codebase searches (e.g. for a specific file/class/function) use ${searchTools} directly.`,
+        `For broader codebase exploration and deep research, use the ${AGENT_TOOL_NAME} tool with subagent_type=${EXPLORE_AGENT.agentType}. This is slower than using ${searchTools} directly, so use this only when a simple, directed search proves to be insufficient or when your task will clearly require more than ${EXPLORE_AGENT_MIN_QUERIES} queries.`,
+      ]
       : []),
     hasSkills
       ? `/<skill-name> (e.g., /commit) is shorthand for users to invoke a user-invocable skill. When executed, the skill gets expanded to a full prompt. Use the ${SKILL_TOOL_NAME} tool to execute them. IMPORTANT: Only use ${SKILL_TOOL_NAME} for skills listed in its user-invocable skills section - do not guess or use built-in CLI commands.`
       : null,
     DISCOVER_SKILLS_TOOL_NAME !== null &&
-    hasSkills &&
-    enabledTools.has(DISCOVER_SKILLS_TOOL_NAME)
+      hasSkills &&
+      enabledTools.has(DISCOVER_SKILLS_TOOL_NAME)
       ? getDiscoverSkillsGuidance()
       : null,
     hasAgentTool &&
-    feature('VERIFICATION_AGENT') &&
-    // 3P default: false — verification agent is ant-only A/B
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_hive_evidence', false)
+      feature('VERIFICATION_AGENT') &&
+      // 3P default: false — verification agent is ant-only A/B
+      getFeatureValue_CACHED_MAY_BE_STALE('tengu_hive_evidence', false)
       ? `The contract: when non-trivial implementation happens on your turn, independent adversarial verification must happen before you report completion \u2014 regardless of who did the implementing (you directly, a fork you spawned, or a subagent). You are the one reporting to the user; you own the gate. Non-trivial means: 3+ file edits, backend/API changes, or infrastructure changes. Spawn the ${AGENT_TOOL_NAME} tool with subagent_type="${VERIFICATION_AGENT_TYPE}". Your own checks, caveats, and a fork's self-checks do NOT substitute \u2014 only the verifier assigns a verdict; you cannot self-assign PARTIAL. Pass the original user request, all files changed (by anyone), the approach, and the plan file path if applicable. Flag concerns if you have them but do NOT share test results or claim things work. On FAIL: fix, resume the verifier with its findings plus your fix, repeat until PASS. On PASS: spot-check it \u2014 re-run 2-3 commands from its report, confirm every PASS has a Command run block with output that matches your re-run. If any PASS lacks a command block or diverges, resume the verifier with the specifics. On PARTIAL (from the verifier): report what passed and what could not be verified.`
       : null,
   ].filter(item => item !== null)
+  // 内部做 A/B 实验 tools/AgentTool/built-in/verificationAgent.ts 独立验证 background: true
 
   if (items.length === 0) return null
   return ['# Session-specific guidance', ...prependBullets(items)].join('\n')
 }
 
+// numbat？
 // @[MODEL LAUNCH]: Remove this section when we launch numbat.
 function getOutputEfficiencySection(): string {
   if (process.env.USER_TYPE === 'ant') {
@@ -510,6 +561,11 @@ ${CYBER_RISK_INSTRUCTION}`,
     // per-turn recompute, which busts the prompt cache on late MCP connect.
     // Gate check inside compute (not selecting between section variants)
     // so a mid-session gate flip doesn't read a stale cached value.
+    // 一旦 MCP 服务器“中途连上”，系统提示词就变，缓存命中会掉。
+    // 开了 delta 后，把“增量变化”放到附件里发，而不是每轮改系统提示词正文，减少缓存抖动。
+    // section 本身会缓存，如果在外层切 section 变体
+    // 会遇到“中途开关翻转但缓存没同步”的风险；放 compute 里更稳。
+    // 缓存机制见 systemPromptSections.ts:L43-L56
     DANGEROUS_uncachedSystemPromptSection(
       'mcp_instructions',
       () =>
@@ -526,28 +582,36 @@ ${CYBER_RISK_INSTRUCTION}`,
     ),
     // Numeric length anchors — research shows ~1.2% output token reduction vs
     // qualitative "be concise". Ant-only to measure quality impact first.
+    // 实验里约有 1.2% token 降幅，先在 ant-only 观察质量副作用
     ...(process.env.USER_TYPE === 'ant'
       ? [
-          systemPromptSection(
-            'numeric_length_anchors',
-            () =>
-              'Length limits: keep text between tool calls to \u226425 words. Keep final responses to \u2264100 words unless the task requires more detail.',
-          ),
-        ]
+        systemPromptSection(
+          'numeric_length_anchors',
+          () =>
+            'Length limits: keep text between tool calls to \u226425 words. Keep final responses to \u2264100 words unless the task requires more detail.',
+        ),
+      ]
       : []),
     ...(feature('TOKEN_BUDGET')
       ? [
-          // Cached unconditionally — the "When the user specifies..." phrasing
-          // makes it a no-op with no budget active. Was DANGEROUS_uncached
-          // (toggled on getCurrentTurnTokenBudget()), busting ~20K tokens per
-          // budget flip. Not moved to a tail attachment: first-response and
-          // budget-continuation paths don't see attachments (#21577).
-          systemPromptSection(
-            'token_budget',
-            () =>
-              'When the user specifies a token target (e.g., "+500k", "spend 2M tokens", "use 1B tokens"), your output token count will be shown each turn. Keep working until you approach the target \u2014 plan your work to fill it productively. The target is a hard minimum, not a suggestion. If you stop early, the system will automatically continue you.',
-          ),
-        ]
+        // Cached unconditionally — the "When the user specifies..." phrasing
+        // makes it a no-op with no budget active. Was DANGEROUS_uncached
+        // (toggled on getCurrentTurnTokenBudget()), busting ~20K tokens per
+        // budget flip. Not moved to a tail attachment: first-response and
+        // budget-continuation paths don't see attachments (#21577).
+        // 提升缓存命中，同时不牺牲功能可用性
+        // 以前它跟“当前轮预算是否激活”绑定，做成 uncached；
+        // 预算状态一变，提示词就变，缓存损耗很大（注释说可到 ~20K tokens 级别）。
+        // 现在改成“无条件放一条通用句子”并缓存：没预算时这句等价 no-op；有预算时才生效，减少缓存抖动。
+        // 为什么不改成附件：注释里写了，首轮响应和预算续跑路径看不到附件，所以必须放系统提示词里。
+        //
+        // 一般用户默认是希望省着用 token？
+        systemPromptSection(
+          'token_budget',
+          () =>
+            'When the user specifies a token target (e.g., "+500k", "spend 2M tokens", "use 1B tokens"), your output token count will be shown each turn. Keep working until you approach the target \u2014 plan your work to fill it productively. The target is a hard minimum, not a suggestion. If you stop early, the system will automatically continue you.',
+        ),
+      ]
       : []),
     ...(feature('KAIROS') || feature('KAIROS_BRIEF')
       ? [systemPromptSection('brief', () => getBriefSection())]
@@ -562,7 +626,7 @@ ${CYBER_RISK_INSTRUCTION}`,
     getSimpleIntroSection(outputStyleConfig),
     getSimpleSystemSection(),
     outputStyleConfig === null ||
-    outputStyleConfig.keepCodingInstructions === true
+      outputStyleConfig.keepCodingInstructions === true
       ? getSimpleDoingTasksSection()
       : null,
     getActionsSection(),
@@ -578,7 +642,7 @@ ${CYBER_RISK_INSTRUCTION}`,
 
 function getMcpInstructions(mcpClients: MCPServerConnection[]): string | null {
   const connectedClients = mcpClients.filter(
-    (client): client is ConnectedMCPServer => client.type === 'connected',
+    (client): client is ConnectedMCPServer => client.type === 'connected', // 类型谓词 v.s. python 列表推导
   )
 
   const clientsWithInstructions = connectedClients.filter(
@@ -603,6 +667,7 @@ The following MCP servers have provided instructions for how to use their tools 
 ${instructionBlocks}`
 }
 
+// 环境、模型、工作目录、截止日期
 export async function computeEnvInfo(
   modelId: string,
   additionalWorkingDirectories?: string[],
@@ -729,6 +794,7 @@ function getKnowledgeCutoff(modelId: string): string | null {
   return null
 }
 
+// Shell Env
 function getShellInfoLine(): string {
   const shell = process.env.SHELL || 'unknown'
   const shellName = shell.includes('zsh')
@@ -763,6 +829,9 @@ export async function enhanceSystemPromptWithEnvDetails(
   additionalWorkingDirectories?: string[],
   enabledToolNames?: ReadonlySet<string>,
 ): Promise<string[]> {
+  // getOriginalCwd() 避免目录漂移，一旦 cwd 被重置/变化，相对路径就容易指错地方
+  // 不要复述只是读过的代码：降噪 和 提高可验证性
+  // 主会话和子代理提示词路径不一致，有一条路径（AgentTool 里）构建 prompt 时还没组装完整工具池，所以拿不到 enabledToolNames 参数；这时用 ?? true 做兜底，宁可先保留说明，避免漏掉引导
   const notes = `Notes:
 - Agent threads always have their cwd reset between bash calls, as a result please only use absolute file paths.
 - In your final response, share file paths (always absolute, never relative) that are relevant to the task. Include code snippets only when the exact text is load-bearing (e.g., a bug you found, a function signature the caller asked for) — do not recap code you merely read.
@@ -776,9 +845,9 @@ export async function enhanceSystemPromptWithEnvDetails(
   // omits this param — `?? true` preserves guidance there.
   const discoverSkillsGuidance =
     feature('EXPERIMENTAL_SKILL_SEARCH') &&
-    skillSearchFeatureCheck?.isSkillSearchEnabled() &&
-    DISCOVER_SKILLS_TOOL_NAME !== null &&
-    (enabledToolNames?.has(DISCOVER_SKILLS_TOOL_NAME) ?? true)
+      skillSearchFeatureCheck?.isSkillSearchEnabled() &&
+      DISCOVER_SKILLS_TOOL_NAME !== null &&
+      (enabledToolNames?.has(DISCOVER_SKILLS_TOOL_NAME) ?? true)
       ? getDiscoverSkillsGuidance()
       : null
   const envInfo = await computeEnvInfo(model, additionalWorkingDirectories)
@@ -793,6 +862,8 @@ export async function enhanceSystemPromptWithEnvDetails(
 /**
  * Returns instructions for using the scratchpad directory if enabled.
  * The scratchpad is a per-session directory where Claude can write temporary files.
+ * 
+ * scratchpad 是一个按会话隔离的目录，Claude 可以在其中写入临时文件
  */
 export function getScratchpadInstructions(): string | null {
   if (!isScratchpadEnabled()) {
@@ -836,7 +907,7 @@ function getFunctionResultClearingSection(model: string): string | null {
   return `# Function Result Clearing
 
 Old tool results will be automatically cleared from context to free up space. The ${config.keepRecent} most recent results are always kept.`
-}
+}// 清理工具结果
 
 const SUMMARIZE_TOOL_RESULTS_SECTION = `When working with tool results, write down any important information you might need later in your response, as the original tool result may be cleared later.`
 
@@ -857,6 +928,10 @@ function getBriefSection(): string | null {
   return BRIEF_PROACTIVE_SECTION
 }
 
+// tick/heartbeat 
+// sleep
+// Unfocused：更自主，少打扰
+// Focused：更协作，关键点多同步
 function getProactiveSection(): string | null {
   if (!(feature('PROACTIVE') || feature('KAIROS'))) return null
   if (!proactiveModule?.isProactiveActive()) return null

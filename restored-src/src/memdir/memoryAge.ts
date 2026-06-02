@@ -38,7 +38,7 @@ export function memoryFreshnessText(mtimeMs: number): string {
     `Memories are point-in-time observations, not live state — ` +
     `claims about code behavior or file:line citations may be outdated. ` +
     `Verify against current code before asserting as fact.`
-  )
+  ) // 当模型用 Read 工具直接读取一个 memory 文件时，这个函数在文件内容前面拼上 <system-reminder> 包裹的警告，「47 days ago 是自然语言」，精确引用可能不可信，怀疑模式
 }
 
 /**

@@ -62,4 +62,4 @@ Update \`${ENTRYPOINT_NAME}\` so it stays under ${MAX_ENTRYPOINT_LINES} lines AN
 ---
 
 Return a brief summary of what you consolidated, updated, or pruned. If nothing changed (memories are already tight), say so.${extra ? `\n\n## Additional context\n\n${extra}` : ''}`
-}
+} // 手动 /dream 在主循环里跑、有正常权限；autoDream fork 出的子 agent 只能用只读 Bash（ls, grep, cat 等），不能写文件

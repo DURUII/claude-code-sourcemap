@@ -35,6 +35,7 @@ export function getAntModelOverrideConfig(): AntModelOverrideConfig | null {
   if (process.env.USER_TYPE !== 'ant') {
     return null
   }
+  // 天狗
   return getFeatureValue_CACHED_MAY_BE_STALE<AntModelOverrideConfig | null>(
     'tengu_ant_model_override',
     null,

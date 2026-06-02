@@ -12,7 +12,7 @@ type Platform = 'win32' | 'darwin' | 'linux'
 
 // Config and data paths
 export const getGlobalClaudeFile = memoize((): string => {
-  // Legacy fallback for backwards compatibility
+  // Legacy fallback for backwards compatibility, 旧版 ~/.claude/.config.json > 新版 ~/.claude.json
   if (
     getFsImplementation().existsSync(
       join(getClaudeConfigHomeDir(), '.config.json'),

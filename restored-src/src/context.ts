@@ -3,19 +3,19 @@ import memoize from 'lodash-es/memoize.js'
 import {
   getAdditionalDirectoriesForClaudeMd,
   setCachedClaudeMdContent,
-} from './bootstrap/state.js'
-import { getLocalISODate } from './constants/common.js'
+} from './bootstrap/state.js' // 会话级全局状态 singleton，是否在哪加载 CLAUDE.md / skills
+import { getLocalISODate } from './constants/common.js' //  getSessionStartDate 是整个会话复用同一个 stale 日期，工具提示会变但不影响主 system prompt 的缓存
 import {
-  filterInjectedMemoryFiles,
-  getClaudeMds,
-  getMemoryFiles,
+  filterInjectedMemoryFiles, // 过滤掉“已注入/不该重复注入”的记忆文件，避免重复污染上下文
+  getClaudeMds, // 把最终文件集合读取并拼成一段给模型的 CLAUDE.md 上下文文本
+  getMemoryFiles, // 找出可作为记忆来源的文件
 } from './utils/claudemd.js'
-import { logForDiagnosticsNoPII } from './utils/diagLogs.js'
-import { isBareMode, isEnvTruthy } from './utils/envUtils.js'
-import { execFileNoThrow } from './utils/execFileNoThrow.js'
+import { logForDiagnosticsNoPII } from './utils/diagLogs.js' // Personally Identifiable Information
+import { isBareMode, isEnvTruthy } from './utils/envUtils.js' // bare 模式下会跳过很多自动加载行为（例如 CLAUDE.md 自动发现）
+import { execFileNoThrow } from './utils/execFileNoThrow.js' // 执行外部命令但不抛异常，跑 git 、 tmux 、 gh 等命令时，不让失败把主流程炸掉，而是统一返回结果对象
 import { getBranch, getDefaultBranch, getIsGit, gitExe } from './utils/git.js'
 import { shouldIncludeGitInstructions } from './utils/gitSettings.js'
-import { logError } from './utils/log.js'
+import { logError } from './utils/log.js' // 日志 sink debug 模式
 
 const MAX_STATUS_CHARS = 2000
 
@@ -26,13 +26,18 @@ export function getSystemPromptInjection(): string | null {
   return systemPromptInjection
 }
 
+// 改动注入值时会立刻清 getUserContext/getSystemContext 的 memoize 缓存，确保下一轮重新计算。
 export function setSystemPromptInjection(value: string | null): void {
   systemPromptInjection = value
-  // Clear context caches immediately when injection changes
+  // Clear context caches immediately when injection changes 
+  // ?.() 如果 clear 这个方法存在，就调用；如果不存在（ undefined/null ），就直接返回 undefined ，不会抛错
   getUserContext.cache.clear?.()
   getSystemContext.cache.clear?.()
 }
 
+// 读取 git 分支、默认分支、 git status --short 、最近提交、git user
+// 超过 2k 字符会截断，避免上下文过长
+// 失败时吞掉并返回 null ，不让主流程崩
 export const getGitStatus = memoize(async (): Promise<string | null> => {
   if (process.env.NODE_ENV === 'test') {
     // Avoid cycles in tests
@@ -112,6 +117,8 @@ export const getGitStatus = memoize(async (): Promise<string | null> => {
 
 /**
  * This context is prepended to each conversation, and cached for the duration of the conversation.
+ * 在 remote 模式或禁用 git 指令时跳过 git status
+ * 注入一个 cacheBreaker （内部调试用，受 feature gate 控制）
  */
 export const getSystemContext = memoize(
   async (): Promise<{
@@ -151,6 +158,9 @@ export const getSystemContext = memoize(
 
 /**
  * This context is prepended to each conversation, and cached for the duration of the conversation.
+ * 读取/拼接 CLAUDE.md 相关记忆内容（可被环境变量或 bare 模式禁用）
+ * 写入缓存给其他模块（比如 auto/yolo 权限/风险分类）复用：“智能审批员”，restored-src/src/utils/permissions/yoloClassifier.ts
+ * 额外注入当前日期（ Today's date is ... ）
  */
 export const getUserContext = memoize(
   async (): Promise<{

@@ -6,6 +6,8 @@ export function registerRememberSkill(): void {
     return
   }
 
+  // 对每条 auto-memory 条目分类：应该提升到 CLAUDE.md（项目规范）？CLAUDE.local.md（个人偏好）？团队记忆？还是留在 auto-memory（临时笔记）？
+  // 输出一份分组报告：Promotions / Cleanup / Ambiguous / No action，等用户审批后才动文件
   const SKILL_PROMPT = `# Memory Review
 
 ## Goal

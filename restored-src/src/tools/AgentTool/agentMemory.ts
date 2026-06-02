@@ -10,6 +10,7 @@ import { findCanonicalGitRoot } from '../../utils/git.js'
 import { sanitizePath } from '../../utils/path.js'
 
 // Persistent agent memory scope: 'user' (~/.claude/agent-memory/), 'project' (.claude/agent-memory/), or 'local' (.claude/agent-memory-local/)
+// AgentMemoryScope 是 Agent 工具的子 agent 记忆，设计为可以进 git 团队共享； 它们共享 memdir 基础设施，但入口和使用场景不同
 export type AgentMemoryScope = 'user' | 'project' | 'local'
 
 /**
@@ -162,6 +163,7 @@ export function loadAgentMemoryPrompt(
   // so it cannot be async). The spawned agent won't try to Write until after
   // a full API round-trip, by which time mkdir will have completed. Even if
   // it hasn't, FileWriteTool does its own mkdir of the parent directory.
+  // e.g. 你去快递柜寄快递，把包裹塞进去、关上门就走了——不等快递员来取,也不管之后送到哪。你手上还有别的事要忙。
   void ensureMemoryDirExists(memoryDir)
 
   const coworkExtraGuidelines =

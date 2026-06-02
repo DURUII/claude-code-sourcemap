@@ -9,7 +9,7 @@
  * use the default bindings.
  */
 
-import chokidar, { type FSWatcher } from 'chokidar'
+import chokidar, { type FSWatcher } from 'chokidar' // 配置/资源文件的热重载：处理好 Windows 兼容、递归监听、文件写入稳定性检测
 import { readFileSync } from 'fs'
 import { readFile, stat } from 'fs/promises'
 import { dirname, join } from 'path'

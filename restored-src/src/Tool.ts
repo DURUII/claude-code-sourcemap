@@ -92,6 +92,7 @@ export type QueryChainTracking = {
   depth: number
 }
 
+// result 字段是辨识标签
 export type ValidationResult =
   | { result: true }
   | {
@@ -102,7 +103,7 @@ export type ValidationResult =
 
 export type SetToolJSXFn = (
   args: {
-    jsx: React.ReactNode | null
+    jsx: React.ReactNode | null //  React 组件/元素
     shouldHidePromptInput: boolean
     shouldContinueAnimation?: true
     showSpinner?: boolean
@@ -367,6 +368,7 @@ export type Tool<
   /**
    * Optional aliases for backwards compatibility when a tool is renamed.
    * The tool can be looked up by any of these names in addition to its primary name.
+   * 不破坏用户的历史 session、旧版 hook 规则、和已有的 transcript
    */
   aliases?: string[]
   /**
@@ -374,8 +376,17 @@ export type Tool<
    * Helps the model find this tool via keyword search when it's deferred.
    * 3–10 words, no trailing period.
    * Prefer terms not already in the tool name (e.g. 'jupyter' for NotebookEdit).
+   * 懒加载
    */
   searchHint?: string
+  /**
+   * 
+   * @param args 模型按 schema 填值，harness 校验后传给 call
+   * @param context 
+   * @param canUseTool 
+   * @param parentMessage 
+   * @param onProgress 
+   */
   call(
     args: z.infer<Input>,
     context: ToolUseContext,

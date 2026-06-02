@@ -4,7 +4,7 @@ import type { logs } from '@opentelemetry/api-logs'
 import type { LoggerProvider } from '@opentelemetry/sdk-logs'
 import type { MeterProvider } from '@opentelemetry/sdk-metrics'
 import type { BasicTracerProvider } from '@opentelemetry/sdk-trace-base'
-import { realpathSync } from 'fs'
+import { realpathSync } from 'fs' // 文件系统
 import sumBy from 'lodash-es/sumBy.js'
 import { cwd } from 'process'
 import type { HookEvent, ModelUsage } from 'src/entrypoints/agentSdkTypes.js'
@@ -21,7 +21,7 @@ import type { ModelStrings } from 'src/utils/model/modelStrings.js'
 import type { SettingSource } from 'src/utils/settings/constants.js'
 import { resetSettingsCache } from 'src/utils/settings/settingsCache.js'
 import type { PluginHookMatcher } from 'src/utils/settings/types.js'
-import { createSignal } from 'src/utils/signal.js'
+import { createSignal } from 'src/utils/signal.js' // 信号量，信号对象独立存在，通知订阅者读最新值；Observer 是，Subject 知道 Observer 接口，典型用于 MVVM；MG 是持久化的跨进程管道，消费前一直存着
 
 // Union type for registered hooks - can be SDK callbacks or native plugin hooks
 type RegisteredHookMatcher = HookCallbackMatcher | PluginHookMatcher
@@ -42,8 +42,9 @@ export type AttributedCounter = {
   add(value: number, additionalAttributes?: Attributes): void
 }
 
+// 模型配置、交互模式、会话标识、工作目录、遥测
 type State = {
-  originalCwd: string
+  originalCwd: string 
   // Stable project root - set once at startup (including by --worktree flag),
   // never updated by mid-session EnterWorktreeTool.
   // Use for project identity (history, skills, sessions) not file operations.
@@ -428,43 +429,50 @@ function getInitialState(): State {
 // AND ESPECIALLY HERE
 const STATE: State = getInitialState()
 
+// Usage: 282 calls
 export function getSessionId(): SessionId {
   return STATE.sessionId
 }
 
-export function regenerateSessionId(
-  options: { setCurrentAsParent?: boolean } = {},
-): SessionId {
-  if (options.setCurrentAsParent) {
-    STATE.parentSessionId = STATE.sessionId
-  }
-  // Drop the outgoing session's plan-slug entry so the Map doesn't
-  // accumulate stale keys. Callers that need to carry the slug across
-  // (REPL.tsx clearContext) read it before calling clearConversation.
-  STATE.planSlugCache.delete(STATE.sessionId)
-  // Regenerated sessions live in the current project: reset projectDir to
-  // null so getTranscriptPath() derives from originalCwd.
-  STATE.sessionId = randomUUID() as SessionId
-  STATE.sessionProjectDir = null
-  return STATE.sessionId
-}
-
-export function getParentSessionId(): SessionId | undefined {
-  return STATE.parentSessionId
+// Usage: 147 calls
+export function getOriginalCwd(): string {
+  return STATE.originalCwd
 }
 
 /**
- * Atomically switch the active session. `sessionId` and `sessionProjectDir`
- * always change together — there is no separate setter for either, so they
- * cannot drift out of sync (CC-34).
- *
- * @param projectDir — directory containing `<sessionId>.jsonl`. Omit (or
- *   pass `null`) for sessions in the current project — the path will derive
- *   from originalCwd at read time. Pass `dirname(transcriptPath)` when the
- *   session lives in a different project directory (git worktrees,
- *   cross-project resume). Every call resets the project dir; it never
- *   carries over from the previous session.
+ * Get the stable project root directory.
+ * Unlike getOriginalCwd(), this is never updated by mid-session EnterWorktreeTool
+ * (so skills/history stay stable when entering a throwaway worktree).
+ * It IS set at startup by --worktree, since that worktree is the session's project.
+ * Use for project identity (history, skills, sessions) not file operations.
  */
+// Usage: 104 calls
+export function getIsNonInteractiveSession(): boolean {
+  return !STATE.isInteractive
+}
+
+// Usage: 61 calls
+export function getIsRemoteMode(): boolean {
+  return STATE.isRemoteMode
+}
+
+// Usage: 47 calls
+export function getModelStrings(): ModelStrings | null {
+  return STATE.modelStrings
+}
+
+// You shouldn't use this directly. See src/utils/model/modelStrings.ts
+// Usage: 41 calls
+export function getProjectRoot(): string {
+  return STATE.projectRoot
+}
+
+// Usage: 29 calls
+export function getKairosActive(): boolean {
+  return STATE.kairosActive
+}
+
+// Usage: 24 calls
 export function switchSession(
   sessionId: SessionId,
   projectDir: string | null = null,
@@ -486,32 +494,17 @@ const sessionSwitched = createSignal<[id: SessionId]>()
  * callers register themselves. concurrentSessions.ts uses this to keep the
  * PID file's sessionId in sync with --resume.
  */
-export const onSessionSwitch = sessionSwitched.subscribe
-
-/**
- * Project directory the current session's transcript lives in, or `null` if
- * the session was created in the current project (common case — derive from
- * originalCwd). See `switchSession()`.
- */
-export function getSessionProjectDir(): string | null {
-  return STATE.sessionProjectDir
+// Usage: 23 calls
+export function getAllowedChannels(): ChannelEntry[] {
+  return STATE.allowedChannels
 }
 
-export function getOriginalCwd(): string {
-  return STATE.originalCwd
+// Usage: 21 calls
+export function getSdkBetas(): string[] | undefined {
+  return STATE.sdkBetas
 }
 
-/**
- * Get the stable project root directory.
- * Unlike getOriginalCwd(), this is never updated by mid-session EnterWorktreeTool
- * (so skills/history stay stable when entering a throwaway worktree).
- * It IS set at startup by --worktree, since that worktree is the session's project.
- * Use for project identity (history, skills, sessions) not file operations.
- */
-export function getProjectRoot(): string {
-  return STATE.projectRoot
-}
-
+// Usage: 20 calls
 export function setOriginalCwd(cwd: string): void {
   STATE.originalCwd = cwd.normalize('NFC')
 }
@@ -520,266 +513,152 @@ export function setOriginalCwd(cwd: string): void {
  * Only for --worktree startup flag. Mid-session EnterWorktreeTool must NOT
  * call this — skills/history should stay anchored to where the session started.
  */
-export function setProjectRoot(cwd: string): void {
-  STATE.projectRoot = cwd.normalize('NFC')
-}
-
-export function getCwdState(): string {
-  return STATE.cwd
-}
-
-export function setCwdState(cwd: string): void {
-  STATE.cwd = cwd.normalize('NFC')
-}
-
-export function getDirectConnectServerUrl(): string | undefined {
-  return STATE.directConnectServerUrl
-}
-
-export function setDirectConnectServerUrl(url: string): void {
-  STATE.directConnectServerUrl = url
-}
-
-export function addToTotalDurationState(
-  duration: number,
-  durationWithoutRetries: number,
+// Usage: 20 calls
+export function setMainLoopModelOverride(
+  model: ModelSetting | undefined,
 ): void {
-  STATE.totalAPIDuration += duration
-  STATE.totalAPIDurationWithoutRetries += durationWithoutRetries
+  STATE.mainLoopModelOverride = model
 }
 
-export function resetTotalDurationStateAndCost_FOR_TESTS_ONLY(): void {
-  STATE.totalAPIDuration = 0
-  STATE.totalAPIDurationWithoutRetries = 0
-  STATE.totalCostUSD = 0
+// Usage: 18 calls
+export function getIsInteractive(): boolean {
+  return STATE.isInteractive
 }
 
-export function addToTotalCostState(
-  cost: number,
-  modelUsage: ModelUsage,
-  model: string,
-): void {
-  STATE.modelUsage[model] = modelUsage
-  STATE.totalCostUSD += cost
+// Usage: 17 calls
+export function setNeedsAutoModeExitAttachment(value: boolean): void {
+  STATE.needsAutoModeExitAttachment = value
 }
 
-export function getTotalCostUSD(): number {
-  return STATE.totalCostUSD
+// Usage: 16 calls
+export function getUserMsgOptIn(): boolean {
+  return STATE.userMsgOptIn
 }
 
-export function getTotalAPIDuration(): number {
-  return STATE.totalAPIDuration
+// Usage: 16 calls
+export function getAdditionalDirectoriesForClaudeMd(): string[] {
+  return STATE.additionalDirectoriesForClaudeMd
 }
 
-export function getTotalDuration(): number {
-  return Date.now() - STATE.startTime
-}
-
-export function getTotalAPIDurationWithoutRetries(): number {
-  return STATE.totalAPIDurationWithoutRetries
-}
-
-export function getTotalToolDuration(): number {
-  return STATE.totalToolDuration
-}
-
-export function addToToolDuration(duration: number): void {
-  STATE.totalToolDuration += duration
-  STATE.turnToolDurationMs += duration
-  STATE.turnToolCount++
-}
-
-export function getTurnHookDurationMs(): number {
-  return STATE.turnHookDurationMs
-}
-
-export function addToTurnHookDuration(duration: number): void {
-  STATE.turnHookDurationMs += duration
-  STATE.turnHookCount++
-}
-
-export function resetTurnHookDuration(): void {
-  STATE.turnHookDurationMs = 0
-  STATE.turnHookCount = 0
-}
-
-export function getTurnHookCount(): number {
-  return STATE.turnHookCount
-}
-
-export function getTurnToolDurationMs(): number {
-  return STATE.turnToolDurationMs
-}
-
-export function resetTurnToolDuration(): void {
-  STATE.turnToolDurationMs = 0
-  STATE.turnToolCount = 0
-}
-
-export function getTurnToolCount(): number {
-  return STATE.turnToolCount
-}
-
-export function getTurnClassifierDurationMs(): number {
-  return STATE.turnClassifierDurationMs
-}
-
-export function addToTurnClassifierDuration(duration: number): void {
-  STATE.turnClassifierDurationMs += duration
-  STATE.turnClassifierCount++
-}
-
-export function resetTurnClassifierDuration(): void {
-  STATE.turnClassifierDurationMs = 0
-  STATE.turnClassifierCount = 0
-}
-
-export function getTurnClassifierCount(): number {
-  return STATE.turnClassifierCount
-}
-
-export function getStatsStore(): {
-  observe(name: string, value: number): void
-} | null {
-  return STATE.statsStore
-}
-
-export function setStatsStore(
-  store: { observe(name: string, value: number): void } | null,
-): void {
-  STATE.statsStore = store
-}
-
-/**
- * Marks that an interaction occurred.
- *
- * By default the actual Date.now() call is deferred until the next Ink render
- * frame (via flushInteractionTime()) so we avoid calling Date.now() on every
- * single keypress.
- *
- * Pass `immediate = true` when calling from React useEffect callbacks or
- * other code that runs *after* the Ink render cycle has already flushed.
- * Without it the timestamp stays stale until the next render, which may never
- * come if the user is idle (e.g. permission dialog waiting for input).
- */
-let interactionTimeDirty = false
-
-export function updateLastInteractionTime(immediate?: boolean): void {
-  if (immediate) {
-    flushInteractionTime_inner()
-  } else {
-    interactionTimeDirty = true
-  }
-}
-
-/**
- * If an interaction was recorded since the last flush, update the timestamp
- * now. Called by Ink before each render cycle so we batch many keypresses into
- * a single Date.now() call.
- */
-export function flushInteractionTime(): void {
-  if (interactionTimeDirty) {
-    flushInteractionTime_inner()
-  }
-}
-
-function flushInteractionTime_inner(): void {
-  STATE.lastInteractionTime = Date.now()
-  interactionTimeDirty = false
-}
-
-export function addToTotalLinesChanged(added: number, removed: number): void {
-  STATE.totalLinesAdded += added
-  STATE.totalLinesRemoved += removed
-}
-
-export function getTotalLinesAdded(): number {
-  return STATE.totalLinesAdded
-}
-
-export function getTotalLinesRemoved(): number {
-  return STATE.totalLinesRemoved
-}
-
+// Usage: 15 calls
 export function getTotalInputTokens(): number {
   return sumBy(Object.values(STATE.modelUsage), 'inputTokens')
 }
 
+// Usage: 14 calls
+export function getTotalAPIDuration(): number {
+  return STATE.totalAPIDuration
+}
+
+// Usage: 13 calls
+export function setCwdState(cwd: string): void {
+  STATE.cwd = cwd.normalize('NFC')
+}
+
+// Usage: 13 calls
+export function getInlinePlugins(): Array<string> {
+  return STATE.inlinePlugins
+}
+
+// Usage: 13 calls
+export function setUseCoworkPlugins(value: boolean): void {
+  STATE.useCoworkPlugins = value
+  resetSettingsCache()
+}
+
+// Usage: 13 calls
+export function isSessionPersistenceDisabled(): boolean {
+  return STATE.sessionPersistenceDisabled
+}
+
+// Usage: 13 calls
+export function setHasExitedPlanMode(value: boolean): void {
+  STATE.hasExitedPlanMode = value
+}
+
+// Usage: 12 calls
 export function getTotalOutputTokens(): number {
   return sumBy(Object.values(STATE.modelUsage), 'outputTokens')
 }
 
-export function getTotalCacheReadInputTokens(): number {
-  return sumBy(Object.values(STATE.modelUsage), 'cacheReadInputTokens')
-}
-
-export function getTotalCacheCreationInputTokens(): number {
-  return sumBy(Object.values(STATE.modelUsage), 'cacheCreationInputTokens')
-}
-
-export function getTotalWebSearchRequests(): number {
-  return sumBy(Object.values(STATE.modelUsage), 'webSearchRequests')
-}
-
-let outputTokensAtTurnStart = 0
-let currentTurnTokenBudget: number | null = null
-export function getTurnOutputTokens(): number {
-  return getTotalOutputTokens() - outputTokensAtTurnStart
-}
+// Usage: 12 calls
 export function getCurrentTurnTokenBudget(): number | null {
   return currentTurnTokenBudget
 }
 let budgetContinuationCount = 0
-export function snapshotOutputTokensForTurn(budget: number | null): void {
-  outputTokensAtTurnStart = getTotalOutputTokens()
-  currentTurnTokenBudget = budget
-  budgetContinuationCount = 0
-}
-export function getBudgetContinuationCount(): number {
-  return budgetContinuationCount
-}
-export function incrementBudgetContinuationCount(): void {
-  budgetContinuationCount++
+// Usage: 12 calls
+export function getModelUsage(): { [modelName: string]: ModelUsage } {
+  return STATE.modelUsage
 }
 
-export function setHasUnknownModelCost(): void {
-  STATE.hasUnknownModelCost = true
+// Usage: 12 calls
+export function registerHookCallbacks(
+  hooks: Partial<Record<HookEvent, RegisteredHookMatcher[]>>,
+): void {
+  if (!STATE.registeredHooks) {
+    STATE.registeredHooks = {}
+  }
+
+  // `registerHookCallbacks` may be called multiple times, so we need to merge (not overwrite)
+  for (const [event, matchers] of Object.entries(hooks)) {
+    const eventKey = event as HookEvent
+    if (!STATE.registeredHooks[eventKey]) {
+      STATE.registeredHooks[eventKey] = []
+    }
+    STATE.registeredHooks[eventKey]!.push(...matchers)
+  }
 }
 
-export function hasUnknownModelCost(): boolean {
-  return STATE.hasUnknownModelCost
+// Usage: 12 calls
+export function getRegisteredHooks(): Partial<
+  Record<HookEvent, RegisteredHookMatcher[]>
+> | null {
+  return STATE.registeredHooks
 }
 
-export function getLastMainRequestId(): string | undefined {
-  return STATE.lastMainRequestId
+// Usage: 11 calls
+export function getParentSessionId(): SessionId | undefined {
+  return STATE.parentSessionId
 }
 
-export function setLastMainRequestId(requestId: string): void {
-  STATE.lastMainRequestId = requestId
+/**
+ * Atomically switch the active session. `sessionId` and `sessionProjectDir`
+ * always change together — there is no separate setter for either, so they
+ * cannot drift out of sync (CC-34).
+ *
+ * @param projectDir — directory containing `<sessionId>.jsonl`. Omit (or
+ *   pass `null`) for sessions in the current project — the path will derive
+ *   from originalCwd at read time. Pass `dirname(transcriptPath)` when the
+ *   session lives in a different project directory (git worktrees,
+ *   cross-project resume). Every call resets the project dir; it never
+ *   carries over from the previous session.
+ */
+// Usage: 11 calls
+export function getCwdState(): string {
+  return STATE.cwd
 }
 
-export function getLastApiCompletionTimestamp(): number | null {
-  return STATE.lastApiCompletionTimestamp
+// Usage: 11 calls
+export function getMainLoopModelOverride(): ModelSetting | undefined {
+  return STATE.mainLoopModelOverride
 }
 
-export function setLastApiCompletionTimestamp(timestamp: number): void {
-  STATE.lastApiCompletionTimestamp = timestamp
+// Usage: 11 calls
+export function setUserMsgOptIn(value: boolean): void {
+  STATE.userMsgOptIn = value
 }
 
-/** Mark that a compaction just occurred. The next API success event will
- *  include isPostCompaction=true, then the flag auto-resets. */
-export function markPostCompaction(): void {
-  STATE.pendingPostCompaction = true
+// Usage: 11 calls
+export function setNeedsPlanModeExitAttachment(value: boolean): void {
+  STATE.needsPlanModeExitAttachment = value
 }
 
-/** Consume the post-compaction flag. Returns true once after compaction,
- *  then returns false until the next compaction. */
-export function consumePostCompaction(): boolean {
-  const was = STATE.pendingPostCompaction
-  STATE.pendingPostCompaction = false
-  return was
+// Usage: 11 calls
+export function getMainThreadAgentType(): string | undefined {
+  return STATE.mainThreadAgentType
 }
 
+// Usage: 10 calls
 export function getLastInteractionTime(): number {
   return STATE.lastInteractionTime
 }
@@ -795,19 +674,115 @@ const SCROLL_DRAIN_IDLE_MS = 150
 
 /** Mark that a scroll event just happened. Background intervals gate on
  *  getIsScrollDraining() and skip their work until the debounce clears. */
-export function markScrollActivity(): void {
-  scrollDraining = true
-  if (scrollDrainTimer) clearTimeout(scrollDrainTimer)
-  scrollDrainTimer = setTimeout(() => {
-    scrollDraining = false
-    scrollDrainTimer = undefined
-  }, SCROLL_DRAIN_IDLE_MS)
-  scrollDrainTimer.unref?.()
+// Usage: 10 calls
+export function getSdkAgentProgressSummariesEnabled(): boolean {
+  return STATE.sdkAgentProgressSummariesEnabled
 }
 
-/** True while scroll is actively draining (within 150ms of last event).
- *  Intervals should early-return when this is set — the work picks up next
- *  tick after scroll settles. */
+// Usage: 10 calls
+export function handlePlanModeTransition(
+  fromMode: string,
+  toMode: string,
+): void {
+  // If switching TO plan mode, clear any pending exit attachment
+  // This prevents sending both plan_mode and plan_mode_exit when user toggles quickly
+  if (toMode === 'plan' && fromMode !== 'plan') {
+    STATE.needsPlanModeExitAttachment = false
+  }
+
+  // If switching out of plan mode, trigger the plan_mode_exit attachment
+  if (fromMode === 'plan' && toMode !== 'plan') {
+    STATE.needsPlanModeExitAttachment = true
+  }
+}
+
+// Usage: 10 calls
+export function addInvokedSkill(
+  skillName: string,
+  skillPath: string,
+  content: string,
+  agentId: string | null = null,
+): void {
+  const key = `${agentId ?? ''}:${skillName}`
+  STATE.invokedSkills.set(key, {
+    skillName,
+    skillPath,
+    content,
+    invokedAt: Date.now(),
+    agentId,
+  })
+}
+
+// Usage: 10 calls
+export function setMainThreadAgentType(agentType: string | undefined): void {
+  STATE.mainThreadAgentType = agentType
+}
+
+// Usage: 9 calls
+export function getTurnOutputTokens(): number {
+  return getTotalOutputTokens() - outputTokensAtTurnStart
+}
+// Usage: 9 calls
+export function hasUnknownModelCost(): boolean {
+  return STATE.hasUnknownModelCost
+}
+
+// Usage: 9 calls
+export function getScheduledTasksEnabled(): boolean {
+  return STATE.scheduledTasksEnabled
+}
+
+export type SessionCronTask = {
+  id: string
+  cron: string
+  prompt: string
+  createdAt: number
+  recurring?: boolean
+  /**
+   * When set, the task was created by an in-process teammate (not the team lead).
+   * The scheduler routes fires to that teammate's pendingUserMessages queue
+   * instead of the main REPL command queue. Session-only — never written to disk.
+   */
+  agentId?: string
+}
+
+// Usage: 9 calls
+export function needsPlanModeExitAttachment(): boolean {
+  return STATE.needsPlanModeExitAttachment
+}
+
+// Usage: 9 calls
+export function needsAutoModeExitAttachment(): boolean {
+  return STATE.needsAutoModeExitAttachment
+}
+
+// Usage: 9 calls
+export function setAllowedChannels(entries: ChannelEntry[]): void {
+  STATE.allowedChannels = entries
+}
+
+// Usage: 8 calls
+export function updateLastInteractionTime(immediate?: boolean): void {
+  if (immediate) {
+    flushInteractionTime_inner()
+  } else {
+    interactionTimeDirty = true
+  }
+}
+
+/**
+ * If an interaction was recorded since the last flush, update the timestamp
+ * now. Called by Ink before each render cycle so we batch many keypresses into
+ * a single Date.now() call.
+ */
+// Usage: 8 calls
+export function markPostCompaction(): void {
+  STATE.pendingPostCompaction = true
+}
+
+/** Consume the post-compaction flag. Returns true once after compaction,
+ *  then returns false until the next compaction. */
+// Usage: 8 calls
 export function getIsScrollDraining(): boolean {
   return scrollDraining
 }
@@ -823,44 +798,95 @@ export async function waitForScrollIdle(): Promise<void> {
   }
 }
 
-export function getModelUsage(): { [modelName: string]: ModelUsage } {
-  return STATE.modelUsage
+// Usage: 8 calls
+export function getActiveTimeCounter(): AttributedCounter | null {
+  return STATE.activeTimeCounter
 }
 
-export function getUsageForModel(model: string): ModelUsage | undefined {
-  return STATE.modelUsage[model]
+// Usage: 8 calls
+export function getFlagSettingsPath(): string | undefined {
+  return STATE.flagSettingsPath
 }
 
-/**
- * Gets the model override set from the --model CLI flag or after the user
- * updates their configured model.
- */
-export function getMainLoopModelOverride(): ModelSetting | undefined {
-  return STATE.mainLoopModelOverride
+// Usage: 8 calls
+export function getSessionBypassPermissionsMode(): boolean {
+  return STATE.sessionBypassPermissionsMode
 }
 
-export function getInitialMainLoopModel(): ModelSetting {
-  return STATE.initialMainLoopModel
+// Usage: 8 calls
+export function getPlanSlugCache(): Map<string, string> {
+  return STATE.planSlugCache
 }
 
-export function setMainLoopModelOverride(
-  model: ModelSetting | undefined,
-): void {
-  STATE.mainLoopModelOverride = model
+// Usage: 8 calls
+export function clearInvokedSkillsForAgent(agentId: string): void {
+  for (const [key, skill] of STATE.invokedSkills) {
+    if (skill.agentId === agentId) {
+      STATE.invokedSkills.delete(key)
+    }
+  }
 }
 
-export function setInitialMainLoopModel(model: ModelSetting): void {
-  STATE.initialMainLoopModel = model
+// Slow operations tracking for dev bar
+const MAX_SLOW_OPERATIONS = 10
+const SLOW_OPERATION_TTL_MS = 10000
+
+// Usage: 7 calls
+export function regenerateSessionId(
+  options: { setCurrentAsParent?: boolean } = {},
+): SessionId {
+  if (options.setCurrentAsParent) {
+    STATE.parentSessionId = STATE.sessionId
+  }
+  // Drop the outgoing session's plan-slug entry so the Map doesn't
+  // accumulate stale keys. Callers that need to carry the slug across
+  // (REPL.tsx clearContext) read it before calling clearConversation.
+  STATE.planSlugCache.delete(STATE.sessionId)
+  // Regenerated sessions live in the current project: reset projectDir to
+  // null so getTranscriptPath() derives from originalCwd.
+  STATE.sessionId = randomUUID() as SessionId
+  STATE.sessionProjectDir = null
+  return STATE.sessionId
 }
 
-export function getSdkBetas(): string[] | undefined {
-  return STATE.sdkBetas
+// Usage: 7 calls
+export function getSessionProjectDir(): string | null {
+  return STATE.sessionProjectDir
 }
 
-export function setSdkBetas(betas: string[] | undefined): void {
-  STATE.sdkBetas = betas
+// Usage: 7 calls
+export function getTotalCostUSD(): number {
+  return STATE.totalCostUSD
 }
 
+// Usage: 7 calls
+export function getTotalDuration(): number {
+  return Date.now() - STATE.startTime
+}
+
+// Usage: 7 calls
+export function getStatsStore(): {
+  observe(name: string, value: number): void
+} | null {
+  return STATE.statsStore
+}
+
+// Usage: 7 calls
+export function getTotalLinesAdded(): number {
+  return STATE.totalLinesAdded
+}
+
+// Usage: 7 calls
+export function getTotalLinesRemoved(): number {
+  return STATE.totalLinesRemoved
+}
+
+// Usage: 7 calls
+export function getLastApiCompletionTimestamp(): number | null {
+  return STATE.lastApiCompletionTimestamp
+}
+
+// Usage: 7 calls
 export function resetCostState(): void {
   STATE.totalCostUSD = 0
   STATE.totalAPIDuration = 0
@@ -878,6 +904,137 @@ export function resetCostState(): void {
  * Sets cost state values for session restore.
  * Called by restoreCostStateForSession in cost-tracker.ts.
  */
+// Usage: 7 calls
+export function resetStateForTests(): void {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('resetStateForTests can only be called in tests')
+  }
+  Object.entries(getInitialState()).forEach(([key, value]) => {
+    STATE[key as keyof State] = value as never
+  })
+  outputTokensAtTurnStart = 0
+  currentTurnTokenBudget = null
+  budgetContinuationCount = 0
+  sessionSwitched.clear()
+}
+
+// You shouldn't use this directly. See src/utils/model/modelStrings.ts::getModelStrings()
+// Usage: 7 calls
+export function getTracerProvider(): BasicTracerProvider | null {
+  return STATE.tracerProvider
+}
+// Usage: 7 calls
+export function setSessionIngressToken(token: string | null): void {
+  STATE.sessionIngressToken = token
+}
+
+// Usage: 7 calls
+export function getSessionTrustAccepted(): boolean {
+  return STATE.sessionTrustAccepted
+}
+
+// Usage: 6 calls
+export function setProjectRoot(cwd: string): void {
+  STATE.projectRoot = cwd.normalize('NFC')
+}
+
+// Usage: 6 calls
+export function getTotalCacheReadInputTokens(): number {
+  return sumBy(Object.values(STATE.modelUsage), 'cacheReadInputTokens')
+}
+
+// Usage: 6 calls
+export function getTotalCacheCreationInputTokens(): number {
+  return sumBy(Object.values(STATE.modelUsage), 'cacheCreationInputTokens')
+}
+
+// Usage: 6 calls
+export function getInitialMainLoopModel(): ModelSetting {
+  return STATE.initialMainLoopModel
+}
+
+// Usage: 6 calls
+export function getTokenCounter(): AttributedCounter | null {
+  return STATE.tokenCounter
+}
+
+// Usage: 6 calls
+export function getClientType(): string {
+  return STATE.clientType
+}
+
+// Usage: 6 calls
+export function setKairosActive(value: boolean): void {
+  STATE.kairosActive = value
+}
+
+// Usage: 6 calls
+export function getFlagSettingsInline(): Record<string, unknown> | null {
+  return STATE.flagSettingsInline
+}
+
+// Usage: 6 calls
+export function preferThirdPartyAuthentication(): boolean {
+  // IDE extension should behave as 1P for authentication reasons.
+  return getIsNonInteractiveSession() && STATE.clientType !== 'claude-vscode'
+}
+
+// Usage: 6 calls
+export function setScheduledTasksEnabled(enabled: boolean): void {
+  STATE.scheduledTasksEnabled = enabled
+}
+
+// Usage: 6 calls
+export function removeSessionCronTasks(ids: readonly string[]): number {
+  if (ids.length === 0) return 0
+  const idSet = new Set(ids)
+  const remaining = STATE.sessionCronTasks.filter(t => !idSet.has(t.id))
+  const removed = STATE.sessionCronTasks.length - remaining.length
+  if (removed === 0) return 0
+  STATE.sessionCronTasks = remaining
+  return removed
+}
+
+// Usage: 6 calls
+export function setLastEmittedDate(date: string | null): void {
+  STATE.lastEmittedDate = date
+}
+
+// Usage: 5 calls
+export function setDirectConnectServerUrl(url: string): void {
+  STATE.directConnectServerUrl = url
+}
+
+// Usage: 5 calls
+export function addToTotalLinesChanged(added: number, removed: number): void {
+  STATE.totalLinesAdded += added
+  STATE.totalLinesRemoved += removed
+}
+
+// Usage: 5 calls
+export function snapshotOutputTokensForTurn(budget: number | null): void {
+  outputTokensAtTurnStart = getTotalOutputTokens()
+  currentTurnTokenBudget = budget
+  budgetContinuationCount = 0
+}
+// Usage: 5 calls
+export function setHasUnknownModelCost(): void {
+  STATE.hasUnknownModelCost = true
+}
+
+// Usage: 5 calls
+export function getLastMainRequestId(): string | undefined {
+  return STATE.lastMainRequestId
+}
+
+// Usage: 5 calls
+export function setLastApiCompletionTimestamp(timestamp: number): void {
+  STATE.lastApiCompletionTimestamp = timestamp
+}
+
+/** Mark that a compaction just occurred. The next API success event will
+ *  include isPostCompaction=true, then the flag auto-resets. */
+// Usage: 5 calls
 export function setCostStateForRestore({
   totalCostUSD,
   totalAPIDuration,
@@ -916,35 +1073,496 @@ export function setCostStateForRestore({
 }
 
 // Only used in tests
-export function resetStateForTests(): void {
-  if (process.env.NODE_ENV !== 'test') {
-    throw new Error('resetStateForTests can only be called in tests')
+// Usage: 5 calls
+export function getPrCounter(): AttributedCounter | null {
+  return STATE.prCounter
+}
+
+// Usage: 5 calls
+export function getCodeEditToolDecisionCounter(): AttributedCounter | null {
+  return STATE.codeEditToolDecisionCounter
+}
+
+// Usage: 5 calls
+export function getLoggerProvider(): LoggerProvider | null {
+  return STATE.loggerProvider
+}
+
+// Usage: 5 calls
+export function setLastClassifierRequests(requests: unknown[] | null): void {
+  STATE.lastClassifierRequests = requests
+}
+
+// Usage: 5 calls
+export function getChromeFlagOverride(): boolean | undefined {
+  return STATE.chromeFlagOverride
+}
+
+// Usage: 5 calls
+export function getUseCoworkPlugins(): boolean {
+  return STATE.useCoworkPlugins
+}
+
+// Usage: 5 calls
+export function getSessionCronTasks(): SessionCronTask[] {
+  return STATE.sessionCronTasks
+}
+
+// Usage: 5 calls
+export function setSessionTrustAccepted(accepted: boolean): void {
+  STATE.sessionTrustAccepted = accepted
+}
+
+// Usage: 5 calls
+export function hasExitedPlanModeInSession(): boolean {
+  return STATE.hasExitedPlanMode
+}
+
+// Usage: 5 calls
+export function clearRegisteredPluginHooks(): void {
+  if (!STATE.registeredHooks) {
+    return
   }
-  Object.entries(getInitialState()).forEach(([key, value]) => {
-    STATE[key as keyof State] = value as never
-  })
-  outputTokensAtTurnStart = 0
-  currentTurnTokenBudget = null
-  budgetContinuationCount = 0
-  sessionSwitched.clear()
+
+  const filtered: Partial<Record<HookEvent, RegisteredHookMatcher[]>> = {}
+  for (const [event, matchers] of Object.entries(STATE.registeredHooks)) {
+    // Keep only callback hooks (those without pluginRoot)
+    const callbackHooks = matchers.filter(m => !('pluginRoot' in m))
+    if (callbackHooks.length > 0) {
+      filtered[event as HookEvent] = callbackHooks
+    }
+  }
+
+  STATE.registeredHooks = Object.keys(filtered).length > 0 ? filtered : null
 }
 
-// You shouldn't use this directly. See src/utils/model/modelStrings.ts::getModelStrings()
-export function getModelStrings(): ModelStrings | null {
-  return STATE.modelStrings
+// Usage: 5 calls
+export function getSessionCreatedTeams(): Set<string> {
+  return STATE.sessionCreatedTeams
 }
 
-// You shouldn't use this directly. See src/utils/model/modelStrings.ts
+// Teleported session tracking for reliability logging
+// Usage: 5 calls
+export function setTeleportedSessionInfo(info: {
+  sessionId: string | null
+}): void {
+  STATE.teleportedSessionInfo = {
+    isTeleported: true,
+    hasLoggedFirstMessage: false,
+    sessionId: info.sessionId,
+  }
+}
+
+// Usage: 5 calls
+export function getInvokedSkillsForAgent(
+  agentId: string | undefined | null,
+): Map<string, InvokedSkillInfo> {
+  const normalizedId = agentId ?? null
+  const filtered = new Map<string, InvokedSkillInfo>()
+  for (const [key, skill] of STATE.invokedSkills) {
+    if (skill.agentId === normalizedId) {
+      filtered.set(key, skill)
+    }
+  }
+  return filtered
+}
+
+// Usage: 5 calls
+export function setAdditionalDirectoriesForClaudeMd(
+  directories: string[],
+): void {
+  STATE.additionalDirectoriesForClaudeMd = directories
+}
+
+// Usage: 5 calls
+export function getPromptId(): string | null {
+  return STATE.promptId
+}
+
+// Usage: 5 calls
+export function setPromptId(id: string | null): void {
+  STATE.promptId = id
+}
+
+
+// Usage: 4 calls
+export function getTotalAPIDurationWithoutRetries(): number {
+  return STATE.totalAPIDurationWithoutRetries
+}
+
+// Usage: 4 calls
+export function addToToolDuration(duration: number): void {
+  STATE.totalToolDuration += duration
+  STATE.turnToolDurationMs += duration
+  STATE.turnToolCount++
+}
+
+// Usage: 4 calls
+export function addToTurnHookDuration(duration: number): void {
+  STATE.turnHookDurationMs += duration
+  STATE.turnHookCount++
+}
+
+// Usage: 4 calls
+export function flushInteractionTime(): void {
+  if (interactionTimeDirty) {
+    flushInteractionTime_inner()
+  }
+}
+
+function flushInteractionTime_inner(): void {
+  STATE.lastInteractionTime = Date.now()
+  interactionTimeDirty = false
+}
+
+// Usage: 4 calls
+export function getTotalWebSearchRequests(): number {
+  return sumBy(Object.values(STATE.modelUsage), 'webSearchRequests')
+}
+
+let outputTokensAtTurnStart = 0
+let currentTurnTokenBudget: number | null = null
+// Usage: 4 calls
+export function getUsageForModel(model: string): ModelUsage | undefined {
+  return STATE.modelUsage[model]
+}
+
+/**
+ * Gets the model override set from the --model CLI flag or after the user
+ * updates their configured model.
+ */
+// Usage: 4 calls
+export function setSdkBetas(betas: string[] | undefined): void {
+  STATE.sdkBetas = betas
+}
+
+// Usage: 4 calls
+export function getLocCounter(): AttributedCounter | null {
+  return STATE.locCounter
+}
+
+// Usage: 4 calls
+export function setLoggerProvider(provider: LoggerProvider | null): void {
+  STATE.loggerProvider = provider
+}
+
+// Usage: 4 calls
+export function setEventLogger(
+  logger: ReturnType<typeof logs.getLogger> | null,
+): void {
+  STATE.eventLogger = logger
+}
+
+// Usage: 4 calls
+export function setMeterProvider(provider: MeterProvider | null): void {
+  STATE.meterProvider = provider
+}
+// Usage: 4 calls
+export function setTracerProvider(provider: BasicTracerProvider | null): void {
+  STATE.tracerProvider = provider
+}
+
+// Usage: 4 calls
+export function getStrictToolResultPairing(): boolean {
+  return STATE.strictToolResultPairing
+}
+
+// Usage: 4 calls
+export function getQuestionPreviewFormat(): 'markdown' | 'html' | undefined {
+  return STATE.questionPreviewFormat
+}
+
+// Usage: 4 calls
+export function setQuestionPreviewFormat(format: 'markdown' | 'html'): void {
+  STATE.questionPreviewFormat = format
+}
+
+// Usage: 4 calls
+export function getAgentColorMap(): Map<string, AgentColorName> {
+  return STATE.agentColorMap
+}
+
+// Usage: 4 calls
+export function getInitJsonSchema(): Record<string, unknown> | null {
+  return STATE.initJsonSchema
+}
+
+// Usage: 4 calls
+export function getTeleportedSessionInfo(): {
+  isTeleported: boolean
+  hasLoggedFirstMessage: boolean
+  sessionId: string | null
+} | null {
+  return STATE.teleportedSessionInfo
+}
+
+// Usage: 4 calls
+export function markFirstTeleportMessageLogged(): void {
+  if (STATE.teleportedSessionInfo) {
+    STATE.teleportedSessionInfo.hasLoggedFirstMessage = true
+  }
+}
+
+// Invoked skills tracking for preservation across compaction
+export type InvokedSkillInfo = {
+  skillName: string
+  skillPath: string
+  content: string
+  invokedAt: number
+  agentId: string | null
+}
+
+// Usage: 4 calls
+export function clearInvokedSkills(
+  preservedAgentIds?: ReadonlySet<string>,
+): void {
+  if (!preservedAgentIds || preservedAgentIds.size === 0) {
+    STATE.invokedSkills.clear()
+    return
+  }
+  for (const [key, skill] of STATE.invokedSkills) {
+    if (skill.agentId === null || !preservedAgentIds.has(skill.agentId)) {
+      STATE.invokedSkills.delete(key)
+    }
+  }
+}
+
+// Usage: 4 calls
+export function addSlowOperation(operation: string, durationMs: number): void {
+  if (process.env.USER_TYPE !== 'ant') return
+  // Skip tracking for editor sessions (user editing a prompt file in $EDITOR)
+  // These are intentionally slow since the user is drafting text
+  if (operation.includes('exec') && operation.includes('claude-prompt-')) {
+    return
+  }
+  const now = Date.now()
+  // Remove stale operations
+  STATE.slowOperations = STATE.slowOperations.filter(
+    op => now - op.timestamp < SLOW_OPERATION_TTL_MS,
+  )
+  // Add new operation
+  STATE.slowOperations.push({ operation, durationMs, timestamp: now })
+  // Keep only the most recent operations
+  if (STATE.slowOperations.length > MAX_SLOW_OPERATIONS) {
+    STATE.slowOperations = STATE.slowOperations.slice(-MAX_SLOW_OPERATIONS)
+  }
+}
+
+const EMPTY_SLOW_OPERATIONS: ReadonlyArray<{
+  operation: string
+  durationMs: number
+  timestamp: number
+}> = []
+
+// Usage: 4 calls
+export function getSlowOperations(): ReadonlyArray<{
+  operation: string
+  durationMs: number
+  timestamp: number
+}> {
+  // Most common case: nothing tracked. Return a stable reference so the
+  // caller's setState() can bail via Object.is instead of re-rendering at 2fps.
+  if (STATE.slowOperations.length === 0) {
+    return EMPTY_SLOW_OPERATIONS
+  }
+  const now = Date.now()
+  // Only allocate a new array when something actually expired; otherwise keep
+  // the reference stable across polls while ops are still fresh.
+  if (
+    STATE.slowOperations.some(op => now - op.timestamp >= SLOW_OPERATION_TTL_MS)
+  ) {
+    STATE.slowOperations = STATE.slowOperations.filter(
+      op => now - op.timestamp < SLOW_OPERATION_TTL_MS,
+    )
+    if (STATE.slowOperations.length === 0) {
+      return EMPTY_SLOW_OPERATIONS
+    }
+  }
+  // Safe to return directly: addSlowOperation() reassigns STATE.slowOperations
+  // before pushing, so the array held in React state is never mutated.
+  return STATE.slowOperations
+}
+
+// Usage: 4 calls
+export function setIsRemoteMode(value: boolean): void {
+  STATE.isRemoteMode = value
+}
+
+// System prompt section accessors
+
+// Usage: 4 calls
+export function setHasDevChannels(value: boolean): void {
+  STATE.hasDevChannels = value
+}
+
+// Usage: 4 calls
+export function clearBetaHeaderLatches(): void {
+  STATE.afkModeHeaderLatched = null
+  STATE.fastModeHeaderLatched = null
+  STATE.cacheEditingHeaderLatched = null
+  STATE.thinkingClearLatched = null
+}
+
+// Usage: 3 calls
+export const onSessionSwitch = sessionSwitched.subscribe
+
+/**
+ * Project directory the current session's transcript lives in, or `null` if
+ * the session was created in the current project (common case — derive from
+ * originalCwd). See `switchSession()`.
+ */
+// Usage: 3 calls
+export function getDirectConnectServerUrl(): string | undefined {
+  return STATE.directConnectServerUrl
+}
+
+// Usage: 3 calls
+export function addToTotalDurationState(
+  duration: number,
+  durationWithoutRetries: number,
+): void {
+  STATE.totalAPIDuration += duration
+  STATE.totalAPIDurationWithoutRetries += durationWithoutRetries
+}
+
+// Usage: 3 calls
+export function addToTotalCostState(
+  cost: number,
+  modelUsage: ModelUsage,
+  model: string,
+): void {
+  STATE.modelUsage[model] = modelUsage
+  STATE.totalCostUSD += cost
+}
+
+// Usage: 3 calls
+export function getTotalToolDuration(): number {
+  return STATE.totalToolDuration
+}
+
+// Usage: 3 calls
+export function getTurnHookDurationMs(): number {
+  return STATE.turnHookDurationMs
+}
+
+// Usage: 3 calls
+export function resetTurnHookDuration(): void {
+  STATE.turnHookDurationMs = 0
+  STATE.turnHookCount = 0
+}
+
+// Usage: 3 calls
+export function getTurnHookCount(): number {
+  return STATE.turnHookCount
+}
+
+// Usage: 3 calls
+export function getTurnToolDurationMs(): number {
+  return STATE.turnToolDurationMs
+}
+
+// Usage: 3 calls
+export function resetTurnToolDuration(): void {
+  STATE.turnToolDurationMs = 0
+  STATE.turnToolCount = 0
+}
+
+// Usage: 3 calls
+export function getTurnToolCount(): number {
+  return STATE.turnToolCount
+}
+
+// Usage: 3 calls
+export function getTurnClassifierDurationMs(): number {
+  return STATE.turnClassifierDurationMs
+}
+
+// Usage: 3 calls
+export function addToTurnClassifierDuration(duration: number): void {
+  STATE.turnClassifierDurationMs += duration
+  STATE.turnClassifierCount++
+}
+
+// Usage: 3 calls
+export function resetTurnClassifierDuration(): void {
+  STATE.turnClassifierDurationMs = 0
+  STATE.turnClassifierCount = 0
+}
+
+// Usage: 3 calls
+export function getTurnClassifierCount(): number {
+  return STATE.turnClassifierCount
+}
+
+// Usage: 3 calls
+export function setStatsStore(
+  store: { observe(name: string, value: number): void } | null,
+): void {
+  STATE.statsStore = store
+}
+
+/**
+ * Marks that an interaction occurred.
+ *
+ * By default the actual Date.now() call is deferred until the next Ink render
+ * frame (via flushInteractionTime()) so we avoid calling Date.now() on every
+ * single keypress.
+ *
+ * Pass `immediate = true` when calling from React useEffect callbacks or
+ * other code that runs *after* the Ink render cycle has already flushed.
+ * Without it the timestamp stays stale until the next render, which may never
+ * come if the user is idle (e.g. permission dialog waiting for input).
+ */
+let interactionTimeDirty = false
+
+// Usage: 3 calls
+export function getBudgetContinuationCount(): number {
+  return budgetContinuationCount
+}
+// Usage: 3 calls
+export function incrementBudgetContinuationCount(): void {
+  budgetContinuationCount++
+}
+
+// Usage: 3 calls
+export function setLastMainRequestId(requestId: string): void {
+  STATE.lastMainRequestId = requestId
+}
+
+// Usage: 3 calls
+export function consumePostCompaction(): boolean {
+  const was = STATE.pendingPostCompaction
+  STATE.pendingPostCompaction = false
+  return was
+}
+
+// Usage: 3 calls
+export function markScrollActivity(): void {
+  scrollDraining = true
+  if (scrollDrainTimer) clearTimeout(scrollDrainTimer)
+  scrollDrainTimer = setTimeout(() => {
+    scrollDraining = false
+    scrollDrainTimer = undefined
+  }, SCROLL_DRAIN_IDLE_MS)
+  scrollDrainTimer.unref?.()
+}
+
+/** True while scroll is actively draining (within 150ms of last event).
+ *  Intervals should early-return when this is set — the work picks up next
+ *  tick after scroll settles. */
+// Usage: 3 calls
+export function setInitialMainLoopModel(model: ModelSetting): void {
+  STATE.initialMainLoopModel = model
+}
+
+// Usage: 3 calls
 export function setModelStrings(modelStrings: ModelStrings): void {
   STATE.modelStrings = modelStrings
 }
 
 // Test utility function to reset model strings for re-initialization.
 // Separate from setModelStrings because we only want to accept 'null' in tests.
-export function resetModelStringsForTestingOnly() {
-  STATE.modelStrings = null
-}
-
+// Usage: 3 calls
 export function setMeter(
   meter: Meter,
   createCounter: (name: string, options: MetricOptions) => AttributedCounter,
@@ -986,197 +1604,101 @@ export function setMeter(
   })
 }
 
+// Usage: 3 calls
 export function getMeter(): Meter | null {
   return STATE.meter
 }
 
+// Usage: 3 calls
 export function getSessionCounter(): AttributedCounter | null {
   return STATE.sessionCounter
 }
 
-export function getLocCounter(): AttributedCounter | null {
-  return STATE.locCounter
-}
-
-export function getPrCounter(): AttributedCounter | null {
-  return STATE.prCounter
-}
-
+// Usage: 3 calls
 export function getCommitCounter(): AttributedCounter | null {
   return STATE.commitCounter
 }
 
+// Usage: 3 calls
 export function getCostCounter(): AttributedCounter | null {
   return STATE.costCounter
 }
 
-export function getTokenCounter(): AttributedCounter | null {
-  return STATE.tokenCounter
-}
-
-export function getCodeEditToolDecisionCounter(): AttributedCounter | null {
-  return STATE.codeEditToolDecisionCounter
-}
-
-export function getActiveTimeCounter(): AttributedCounter | null {
-  return STATE.activeTimeCounter
-}
-
-export function getLoggerProvider(): LoggerProvider | null {
-  return STATE.loggerProvider
-}
-
-export function setLoggerProvider(provider: LoggerProvider | null): void {
-  STATE.loggerProvider = provider
-}
-
+// Usage: 3 calls
 export function getEventLogger(): ReturnType<typeof logs.getLogger> | null {
   return STATE.eventLogger
 }
 
-export function setEventLogger(
-  logger: ReturnType<typeof logs.getLogger> | null,
-): void {
-  STATE.eventLogger = logger
-}
-
+// Usage: 3 calls
 export function getMeterProvider(): MeterProvider | null {
   return STATE.meterProvider
 }
 
-export function setMeterProvider(provider: MeterProvider | null): void {
-  STATE.meterProvider = provider
-}
-export function getTracerProvider(): BasicTracerProvider | null {
-  return STATE.tracerProvider
-}
-export function setTracerProvider(provider: BasicTracerProvider | null): void {
-  STATE.tracerProvider = provider
-}
-
-export function getIsNonInteractiveSession(): boolean {
-  return !STATE.isInteractive
-}
-
-export function getIsInteractive(): boolean {
-  return STATE.isInteractive
-}
-
+// Usage: 3 calls
 export function setIsInteractive(value: boolean): void {
   STATE.isInteractive = value
 }
 
-export function getClientType(): string {
-  return STATE.clientType
-}
-
+// Usage: 3 calls
 export function setClientType(type: string): void {
   STATE.clientType = type
 }
 
-export function getSdkAgentProgressSummariesEnabled(): boolean {
-  return STATE.sdkAgentProgressSummariesEnabled
-}
-
+// Usage: 3 calls
 export function setSdkAgentProgressSummariesEnabled(value: boolean): void {
   STATE.sdkAgentProgressSummariesEnabled = value
 }
 
-export function getKairosActive(): boolean {
-  return STATE.kairosActive
-}
-
-export function setKairosActive(value: boolean): void {
-  STATE.kairosActive = value
-}
-
-export function getStrictToolResultPairing(): boolean {
-  return STATE.strictToolResultPairing
-}
-
-export function setStrictToolResultPairing(value: boolean): void {
-  STATE.strictToolResultPairing = value
-}
-
-// Field name 'userMsgOptIn' avoids excluded-string substrings ('BriefTool',
-// 'SendUserMessage' — case-insensitive). All callers are inside feature()
-// guards so these accessors don't need their own (matches getKairosActive).
-export function getUserMsgOptIn(): boolean {
-  return STATE.userMsgOptIn
-}
-
-export function setUserMsgOptIn(value: boolean): void {
-  STATE.userMsgOptIn = value
-}
-
-export function getSessionSource(): string | undefined {
-  return STATE.sessionSource
-}
-
+// Usage: 3 calls
 export function setSessionSource(source: string): void {
   STATE.sessionSource = source
 }
 
-export function getQuestionPreviewFormat(): 'markdown' | 'html' | undefined {
-  return STATE.questionPreviewFormat
-}
-
-export function setQuestionPreviewFormat(format: 'markdown' | 'html'): void {
-  STATE.questionPreviewFormat = format
-}
-
-export function getAgentColorMap(): Map<string, AgentColorName> {
-  return STATE.agentColorMap
-}
-
-export function getFlagSettingsPath(): string | undefined {
-  return STATE.flagSettingsPath
-}
-
+// Usage: 3 calls
 export function setFlagSettingsPath(path: string | undefined): void {
   STATE.flagSettingsPath = path
 }
 
-export function getFlagSettingsInline(): Record<string, unknown> | null {
-  return STATE.flagSettingsInline
-}
-
+// Usage: 3 calls
 export function setFlagSettingsInline(
   settings: Record<string, unknown> | null,
 ): void {
   STATE.flagSettingsInline = settings
 }
 
+// Usage: 3 calls
 export function getSessionIngressToken(): string | null | undefined {
   return STATE.sessionIngressToken
 }
 
-export function setSessionIngressToken(token: string | null): void {
-  STATE.sessionIngressToken = token
-}
-
+// Usage: 3 calls
 export function getOauthTokenFromFd(): string | null | undefined {
   return STATE.oauthTokenFromFd
 }
 
+// Usage: 3 calls
 export function setOauthTokenFromFd(token: string | null): void {
   STATE.oauthTokenFromFd = token
 }
 
+// Usage: 3 calls
 export function getApiKeyFromFd(): string | null | undefined {
   return STATE.apiKeyFromFd
 }
 
+// Usage: 3 calls
 export function setApiKeyFromFd(key: string | null): void {
   STATE.apiKeyFromFd = key
 }
 
+// Usage: 3 calls
 export function setLastAPIRequest(
   params: Omit<BetaMessageStreamParams, 'messages'> | null,
 ): void {
   STATE.lastAPIRequest = params
 }
 
+// Usage: 3 calls
 export function getLastAPIRequest(): Omit<
   BetaMessageStreamParams,
   'messages'
@@ -1184,34 +1706,29 @@ export function getLastAPIRequest(): Omit<
   return STATE.lastAPIRequest
 }
 
+// Usage: 3 calls
 export function setLastAPIRequestMessages(
   messages: BetaMessageStreamParams['messages'] | null,
 ): void {
   STATE.lastAPIRequestMessages = messages
 }
 
-export function getLastAPIRequestMessages():
-  | BetaMessageStreamParams['messages']
-  | null {
-  return STATE.lastAPIRequestMessages
-}
-
-export function setLastClassifierRequests(requests: unknown[] | null): void {
-  STATE.lastClassifierRequests = requests
-}
-
+// Usage: 3 calls
 export function getLastClassifierRequests(): unknown[] | null {
   return STATE.lastClassifierRequests
 }
 
+// Usage: 3 calls
 export function setCachedClaudeMdContent(content: string | null): void {
   STATE.cachedClaudeMdContent = content
 }
 
+// Usage: 3 calls
 export function getCachedClaudeMdContent(): string | null {
   return STATE.cachedClaudeMdContent
 }
 
+// Usage: 3 calls
 export function addToInMemoryErrorLog(errorInfo: {
   error: string
   timestamp: string
@@ -1223,78 +1740,32 @@ export function addToInMemoryErrorLog(errorInfo: {
   STATE.inMemoryErrorLog.push(errorInfo)
 }
 
+// Usage: 3 calls
 export function getAllowedSettingSources(): SettingSource[] {
   return STATE.allowedSettingSources
 }
 
+// Usage: 3 calls
 export function setAllowedSettingSources(sources: SettingSource[]): void {
   STATE.allowedSettingSources = sources
 }
 
-export function preferThirdPartyAuthentication(): boolean {
-  // IDE extension should behave as 1P for authentication reasons.
-  return getIsNonInteractiveSession() && STATE.clientType !== 'claude-vscode'
-}
-
+// Usage: 3 calls
 export function setInlinePlugins(plugins: Array<string>): void {
   STATE.inlinePlugins = plugins
 }
 
-export function getInlinePlugins(): Array<string> {
-  return STATE.inlinePlugins
-}
-
+// Usage: 3 calls
 export function setChromeFlagOverride(value: boolean | undefined): void {
   STATE.chromeFlagOverride = value
 }
 
-export function getChromeFlagOverride(): boolean | undefined {
-  return STATE.chromeFlagOverride
-}
-
-export function setUseCoworkPlugins(value: boolean): void {
-  STATE.useCoworkPlugins = value
-  resetSettingsCache()
-}
-
-export function getUseCoworkPlugins(): boolean {
-  return STATE.useCoworkPlugins
-}
-
+// Usage: 3 calls
 export function setSessionBypassPermissionsMode(enabled: boolean): void {
   STATE.sessionBypassPermissionsMode = enabled
 }
 
-export function getSessionBypassPermissionsMode(): boolean {
-  return STATE.sessionBypassPermissionsMode
-}
-
-export function setScheduledTasksEnabled(enabled: boolean): void {
-  STATE.scheduledTasksEnabled = enabled
-}
-
-export function getScheduledTasksEnabled(): boolean {
-  return STATE.scheduledTasksEnabled
-}
-
-export type SessionCronTask = {
-  id: string
-  cron: string
-  prompt: string
-  createdAt: number
-  recurring?: boolean
-  /**
-   * When set, the task was created by an in-process teammate (not the team lead).
-   * The scheduler routes fires to that teammate's pendingUserMessages queue
-   * instead of the main REPL command queue. Session-only — never written to disk.
-   */
-  agentId?: string
-}
-
-export function getSessionCronTasks(): SessionCronTask[] {
-  return STATE.sessionCronTasks
-}
-
+// Usage: 3 calls
 export function addSessionCronTask(task: SessionCronTask): void {
   STATE.sessionCronTasks.push(task)
 }
@@ -1304,72 +1775,12 @@ export function addSessionCronTask(task: SessionCronTask): void {
  * downstream work (e.g. the disk read in removeCronTasks) when all ids
  * were accounted for here.
  */
-export function removeSessionCronTasks(ids: readonly string[]): number {
-  if (ids.length === 0) return 0
-  const idSet = new Set(ids)
-  const remaining = STATE.sessionCronTasks.filter(t => !idSet.has(t.id))
-  const removed = STATE.sessionCronTasks.length - remaining.length
-  if (removed === 0) return 0
-  STATE.sessionCronTasks = remaining
-  return removed
-}
-
-export function setSessionTrustAccepted(accepted: boolean): void {
-  STATE.sessionTrustAccepted = accepted
-}
-
-export function getSessionTrustAccepted(): boolean {
-  return STATE.sessionTrustAccepted
-}
-
+// Usage: 3 calls
 export function setSessionPersistenceDisabled(disabled: boolean): void {
   STATE.sessionPersistenceDisabled = disabled
 }
 
-export function isSessionPersistenceDisabled(): boolean {
-  return STATE.sessionPersistenceDisabled
-}
-
-export function hasExitedPlanModeInSession(): boolean {
-  return STATE.hasExitedPlanMode
-}
-
-export function setHasExitedPlanMode(value: boolean): void {
-  STATE.hasExitedPlanMode = value
-}
-
-export function needsPlanModeExitAttachment(): boolean {
-  return STATE.needsPlanModeExitAttachment
-}
-
-export function setNeedsPlanModeExitAttachment(value: boolean): void {
-  STATE.needsPlanModeExitAttachment = value
-}
-
-export function handlePlanModeTransition(
-  fromMode: string,
-  toMode: string,
-): void {
-  // If switching TO plan mode, clear any pending exit attachment
-  // This prevents sending both plan_mode and plan_mode_exit when user toggles quickly
-  if (toMode === 'plan' && fromMode !== 'plan') {
-    STATE.needsPlanModeExitAttachment = false
-  }
-
-  // If switching out of plan mode, trigger the plan_mode_exit attachment
-  if (fromMode === 'plan' && toMode !== 'plan') {
-    STATE.needsPlanModeExitAttachment = true
-  }
-}
-
-export function needsAutoModeExitAttachment(): boolean {
-  return STATE.needsAutoModeExitAttachment
-}
-
-export function setNeedsAutoModeExitAttachment(value: boolean): void {
-  STATE.needsAutoModeExitAttachment = value
-}
-
+// Usage: 3 calls
 export function handleAutoModeTransition(
   fromMode: string,
   toMode: string,
@@ -1399,249 +1810,34 @@ export function handleAutoModeTransition(
 }
 
 // LSP plugin recommendation session tracking
+// Usage: 3 calls
 export function hasShownLspRecommendationThisSession(): boolean {
   return STATE.lspRecommendationShownThisSession
 }
 
+// Usage: 3 calls
 export function setLspRecommendationShownThisSession(value: boolean): void {
   STATE.lspRecommendationShownThisSession = value
 }
 
 // SDK init event state
+// Usage: 3 calls
 export function setInitJsonSchema(schema: Record<string, unknown>): void {
   STATE.initJsonSchema = schema
 }
 
-export function getInitJsonSchema(): Record<string, unknown> | null {
-  return STATE.initJsonSchema
-}
-
-export function registerHookCallbacks(
-  hooks: Partial<Record<HookEvent, RegisteredHookMatcher[]>>,
-): void {
-  if (!STATE.registeredHooks) {
-    STATE.registeredHooks = {}
-  }
-
-  // `registerHookCallbacks` may be called multiple times, so we need to merge (not overwrite)
-  for (const [event, matchers] of Object.entries(hooks)) {
-    const eventKey = event as HookEvent
-    if (!STATE.registeredHooks[eventKey]) {
-      STATE.registeredHooks[eventKey] = []
-    }
-    STATE.registeredHooks[eventKey]!.push(...matchers)
-  }
-}
-
-export function getRegisteredHooks(): Partial<
-  Record<HookEvent, RegisteredHookMatcher[]>
-> | null {
-  return STATE.registeredHooks
-}
-
-export function clearRegisteredHooks(): void {
-  STATE.registeredHooks = null
-}
-
-export function clearRegisteredPluginHooks(): void {
-  if (!STATE.registeredHooks) {
-    return
-  }
-
-  const filtered: Partial<Record<HookEvent, RegisteredHookMatcher[]>> = {}
-  for (const [event, matchers] of Object.entries(STATE.registeredHooks)) {
-    // Keep only callback hooks (those without pluginRoot)
-    const callbackHooks = matchers.filter(m => !('pluginRoot' in m))
-    if (callbackHooks.length > 0) {
-      filtered[event as HookEvent] = callbackHooks
-    }
-  }
-
-  STATE.registeredHooks = Object.keys(filtered).length > 0 ? filtered : null
-}
-
+// Usage: 3 calls
 export function resetSdkInitState(): void {
   STATE.initJsonSchema = null
   STATE.registeredHooks = null
 }
 
-export function getPlanSlugCache(): Map<string, string> {
-  return STATE.planSlugCache
-}
-
-export function getSessionCreatedTeams(): Set<string> {
-  return STATE.sessionCreatedTeams
-}
-
-// Teleported session tracking for reliability logging
-export function setTeleportedSessionInfo(info: {
-  sessionId: string | null
-}): void {
-  STATE.teleportedSessionInfo = {
-    isTeleported: true,
-    hasLoggedFirstMessage: false,
-    sessionId: info.sessionId,
-  }
-}
-
-export function getTeleportedSessionInfo(): {
-  isTeleported: boolean
-  hasLoggedFirstMessage: boolean
-  sessionId: string | null
-} | null {
-  return STATE.teleportedSessionInfo
-}
-
-export function markFirstTeleportMessageLogged(): void {
-  if (STATE.teleportedSessionInfo) {
-    STATE.teleportedSessionInfo.hasLoggedFirstMessage = true
-  }
-}
-
-// Invoked skills tracking for preservation across compaction
-export type InvokedSkillInfo = {
-  skillName: string
-  skillPath: string
-  content: string
-  invokedAt: number
-  agentId: string | null
-}
-
-export function addInvokedSkill(
-  skillName: string,
-  skillPath: string,
-  content: string,
-  agentId: string | null = null,
-): void {
-  const key = `${agentId ?? ''}:${skillName}`
-  STATE.invokedSkills.set(key, {
-    skillName,
-    skillPath,
-    content,
-    invokedAt: Date.now(),
-    agentId,
-  })
-}
-
-export function getInvokedSkills(): Map<string, InvokedSkillInfo> {
-  return STATE.invokedSkills
-}
-
-export function getInvokedSkillsForAgent(
-  agentId: string | undefined | null,
-): Map<string, InvokedSkillInfo> {
-  const normalizedId = agentId ?? null
-  const filtered = new Map<string, InvokedSkillInfo>()
-  for (const [key, skill] of STATE.invokedSkills) {
-    if (skill.agentId === normalizedId) {
-      filtered.set(key, skill)
-    }
-  }
-  return filtered
-}
-
-export function clearInvokedSkills(
-  preservedAgentIds?: ReadonlySet<string>,
-): void {
-  if (!preservedAgentIds || preservedAgentIds.size === 0) {
-    STATE.invokedSkills.clear()
-    return
-  }
-  for (const [key, skill] of STATE.invokedSkills) {
-    if (skill.agentId === null || !preservedAgentIds.has(skill.agentId)) {
-      STATE.invokedSkills.delete(key)
-    }
-  }
-}
-
-export function clearInvokedSkillsForAgent(agentId: string): void {
-  for (const [key, skill] of STATE.invokedSkills) {
-    if (skill.agentId === agentId) {
-      STATE.invokedSkills.delete(key)
-    }
-  }
-}
-
-// Slow operations tracking for dev bar
-const MAX_SLOW_OPERATIONS = 10
-const SLOW_OPERATION_TTL_MS = 10000
-
-export function addSlowOperation(operation: string, durationMs: number): void {
-  if (process.env.USER_TYPE !== 'ant') return
-  // Skip tracking for editor sessions (user editing a prompt file in $EDITOR)
-  // These are intentionally slow since the user is drafting text
-  if (operation.includes('exec') && operation.includes('claude-prompt-')) {
-    return
-  }
-  const now = Date.now()
-  // Remove stale operations
-  STATE.slowOperations = STATE.slowOperations.filter(
-    op => now - op.timestamp < SLOW_OPERATION_TTL_MS,
-  )
-  // Add new operation
-  STATE.slowOperations.push({ operation, durationMs, timestamp: now })
-  // Keep only the most recent operations
-  if (STATE.slowOperations.length > MAX_SLOW_OPERATIONS) {
-    STATE.slowOperations = STATE.slowOperations.slice(-MAX_SLOW_OPERATIONS)
-  }
-}
-
-const EMPTY_SLOW_OPERATIONS: ReadonlyArray<{
-  operation: string
-  durationMs: number
-  timestamp: number
-}> = []
-
-export function getSlowOperations(): ReadonlyArray<{
-  operation: string
-  durationMs: number
-  timestamp: number
-}> {
-  // Most common case: nothing tracked. Return a stable reference so the
-  // caller's setState() can bail via Object.is instead of re-rendering at 2fps.
-  if (STATE.slowOperations.length === 0) {
-    return EMPTY_SLOW_OPERATIONS
-  }
-  const now = Date.now()
-  // Only allocate a new array when something actually expired; otherwise keep
-  // the reference stable across polls while ops are still fresh.
-  if (
-    STATE.slowOperations.some(op => now - op.timestamp >= SLOW_OPERATION_TTL_MS)
-  ) {
-    STATE.slowOperations = STATE.slowOperations.filter(
-      op => now - op.timestamp < SLOW_OPERATION_TTL_MS,
-    )
-    if (STATE.slowOperations.length === 0) {
-      return EMPTY_SLOW_OPERATIONS
-    }
-  }
-  // Safe to return directly: addSlowOperation() reassigns STATE.slowOperations
-  // before pushing, so the array held in React state is never mutated.
-  return STATE.slowOperations
-}
-
-export function getMainThreadAgentType(): string | undefined {
-  return STATE.mainThreadAgentType
-}
-
-export function setMainThreadAgentType(agentType: string | undefined): void {
-  STATE.mainThreadAgentType = agentType
-}
-
-export function getIsRemoteMode(): boolean {
-  return STATE.isRemoteMode
-}
-
-export function setIsRemoteMode(value: boolean): void {
-  STATE.isRemoteMode = value
-}
-
-// System prompt section accessors
-
+// Usage: 3 calls
 export function getSystemPromptSectionCache(): Map<string, string | null> {
   return STATE.systemPromptSectionCache
 }
 
+// Usage: 3 calls
 export function setSystemPromptSectionCacheEntry(
   name: string,
   value: string | null,
@@ -1649,90 +1845,79 @@ export function setSystemPromptSectionCacheEntry(
   STATE.systemPromptSectionCache.set(name, value)
 }
 
+// Usage: 3 calls
 export function clearSystemPromptSectionState(): void {
   STATE.systemPromptSectionCache.clear()
 }
 
 // Last emitted date accessors (for detecting midnight date changes)
 
+// Usage: 3 calls
 export function getLastEmittedDate(): string | null {
   return STATE.lastEmittedDate
 }
 
-export function setLastEmittedDate(date: string | null): void {
-  STATE.lastEmittedDate = date
-}
-
-export function getAdditionalDirectoriesForClaudeMd(): string[] {
-  return STATE.additionalDirectoriesForClaudeMd
-}
-
-export function setAdditionalDirectoriesForClaudeMd(
-  directories: string[],
-): void {
-  STATE.additionalDirectoriesForClaudeMd = directories
-}
-
-export function getAllowedChannels(): ChannelEntry[] {
-  return STATE.allowedChannels
-}
-
-export function setAllowedChannels(entries: ChannelEntry[]): void {
-  STATE.allowedChannels = entries
-}
-
+// Usage: 3 calls
 export function getHasDevChannels(): boolean {
   return STATE.hasDevChannels
 }
 
-export function setHasDevChannels(value: boolean): void {
-  STATE.hasDevChannels = value
-}
-
+// Usage: 3 calls
 export function getPromptCache1hAllowlist(): string[] | null {
   return STATE.promptCache1hAllowlist
 }
 
+// Usage: 3 calls
 export function setPromptCache1hAllowlist(allowlist: string[] | null): void {
   STATE.promptCache1hAllowlist = allowlist
 }
 
+// Usage: 3 calls
 export function getPromptCache1hEligible(): boolean | null {
   return STATE.promptCache1hEligible
 }
 
+// Usage: 3 calls
 export function setPromptCache1hEligible(eligible: boolean | null): void {
   STATE.promptCache1hEligible = eligible
 }
 
+// Usage: 3 calls
 export function getAfkModeHeaderLatched(): boolean | null {
   return STATE.afkModeHeaderLatched
 }
 
+// Usage: 3 calls
 export function setAfkModeHeaderLatched(v: boolean): void {
   STATE.afkModeHeaderLatched = v
 }
 
+// Usage: 3 calls
 export function getFastModeHeaderLatched(): boolean | null {
   return STATE.fastModeHeaderLatched
 }
 
+// Usage: 3 calls
 export function setFastModeHeaderLatched(v: boolean): void {
   STATE.fastModeHeaderLatched = v
 }
 
+// Usage: 3 calls
 export function getCacheEditingHeaderLatched(): boolean | null {
   return STATE.cacheEditingHeaderLatched
 }
 
+// Usage: 3 calls
 export function setCacheEditingHeaderLatched(v: boolean): void {
   STATE.cacheEditingHeaderLatched = v
 }
 
+// Usage: 3 calls
 export function getThinkingClearLatched(): boolean | null {
   return STATE.thinkingClearLatched
 }
 
+// Usage: 3 calls
 export function setThinkingClearLatched(v: boolean): void {
   STATE.thinkingClearLatched = v
 }
@@ -1741,18 +1926,49 @@ export function setThinkingClearLatched(v: boolean): void {
  * Reset beta header latches to null. Called on /clear and /compact so a
  * fresh conversation gets fresh header evaluation.
  */
-export function clearBetaHeaderLatches(): void {
-  STATE.afkModeHeaderLatched = null
-  STATE.fastModeHeaderLatched = null
-  STATE.cacheEditingHeaderLatched = null
-  STATE.thinkingClearLatched = null
+// Usage: 1 calls
+export function resetTotalDurationStateAndCost_FOR_TESTS_ONLY(): void {
+  STATE.totalAPIDuration = 0
+  STATE.totalAPIDurationWithoutRetries = 0
+  STATE.totalCostUSD = 0
 }
 
-export function getPromptId(): string | null {
-  return STATE.promptId
+// Usage: 1 calls
+export function resetModelStringsForTestingOnly() {
+  STATE.modelStrings = null
 }
 
-export function setPromptId(id: string | null): void {
-  STATE.promptId = id
+// Usage: 1 calls
+export function setStrictToolResultPairing(value: boolean): void {
+  STATE.strictToolResultPairing = value
 }
 
+// Field name 'userMsgOptIn' avoids excluded-string substrings ('BriefTool',
+// 'SendUserMessage' — case-insensitive). All callers are inside feature()
+// guards so these accessors don't need their own (matches getKairosActive).
+// Usage: 1 calls
+export function getSessionSource(): string | undefined {
+  return STATE.sessionSource
+}
+
+// Usage: 1 calls
+export function getLastAPIRequestMessages():
+  | BetaMessageStreamParams['messages']
+  | null {
+  return STATE.lastAPIRequestMessages
+}
+
+// Usage: 1 calls
+export function clearRegisteredHooks(): void {
+  STATE.registeredHooks = null
+}
+
+// Usage: 1 calls
+export function getInvokedSkills(): Map<string, InvokedSkillInfo> {
+  return STATE.invokedSkills
+}
+
+// Stub: not in restored source (referenced by SendMessageTool, ToolSearchTool)
+export function isReplBridgeActive(): boolean {
+  return false
+}

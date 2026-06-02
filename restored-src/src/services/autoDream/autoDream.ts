@@ -10,7 +10,7 @@
 // State is closure-scoped inside initAutoDream() rather than module-level
 // (tests call initAutoDream() in beforeEach for a fresh closure).
 
-import type { REPLHookContext } from '../../utils/hooks/postSamplingHooks.js'
+import type { REPLHookContext } from '../../utils/hooks/postSamplingHooks.js' // forked agent
 import {
   createCacheSafeParams,
   runForkedAgent,
@@ -34,12 +34,12 @@ import {
   getSessionId,
 } from '../../bootstrap/state.js'
 import { createAutoMemCanUseTool } from '../extractMemories/extractMemories.js'
-import { buildConsolidationPrompt } from './consolidationPrompt.js'
+import { buildConsolidationPrompt } from './consolidationPrompt.js' // Orient, Gather, Consolidate, Prune and index
 import {
   readLastConsolidatedAt,
   listSessionsTouchedSince,
-  tryAcquireConsolidationLock,
-  rollbackConsolidationLock,
+  tryAcquireConsolidationLock, // 防止两个进程同时整合
+  rollbackConsolidationLock, // 
 } from './consolidationLock.js'
 import {
   registerDreamTask,
@@ -47,7 +47,7 @@ import {
   completeDreamTask,
   failDreamTask,
   isDreamTask,
-} from '../../tasks/DreamTask/DreamTask.js'
+} from '../../tasks/DreamTask/DreamTask.js' // 让 UI 能展示、管理、终止任何后台工作，不管是 shell 命令、子 agent、还是 dream
 import { FILE_EDIT_TOOL_NAME } from '../../tools/FileEditTool/constants.js'
 import { FILE_WRITE_TOOL_NAME } from '../../tools/FileWriteTool/prompt.js'
 
@@ -113,7 +113,7 @@ let runner:
       context: REPLHookContext,
       appendSystemMessage?: AppendSystemMessageFn,
     ) => Promise<void>)
-  | null = null
+  | null = null // 延迟初始化
 
 /**
  * Call once at startup (from backgroundHousekeeping alongside
@@ -213,6 +213,7 @@ export function initAutoDream(): void {
       // Tool constraints note goes in `extra`, not the shared prompt body —
       // manual /dream runs in the main loop with normal permissions and this
       // would be misleading there.
+      // buildConsolidationPrompt 里的 prompt 是 autoDream 和手动 /dream 共享的。但 autoDream 的 fork agent 有工具限制，手动 /dream 没有
       const extra = `
 
 **Tool constraints for this run:** Bash is restricted to read-only commands (\`ls\`, \`find\`, \`grep\`, \`cat\`, \`stat\`, \`wc\`, \`head\`, \`tail\`, and similar). Anything that writes, redirects to a file, or modifies state will be denied. Plan your exploration with this in mind — no need to probe.
@@ -222,14 +223,14 @@ ${sessionIds.map(id => `- ${id}`).join('\n')}`
       const prompt = buildConsolidationPrompt(memoryRoot, transcriptDir, extra)
 
       const result = await runForkedAgent({
-        promptMessages: [createUserMessage({ content: prompt })],
-        cacheSafeParams: createCacheSafeParams(context),
-        canUseTool: createAutoMemCanUseTool(memoryRoot),
-        querySource: 'auto_dream',
+        promptMessages: [createUserMessage({ content: prompt })], // instructions
+        cacheSafeParams: createCacheSafeParams(context), // prompt cache
+        canUseTool: createAutoMemCanUseTool(memoryRoot), // Bash 只允许 isReadOnly 命令，Edit/Write 只允许写到 memoryRoot 目录下
+        querySource: 'auto_dream', // repl_main_thread, auto_dream, session_memory, prompt_suggestion, speculation, magic_docs, agent_creation, verification_agent, compact, 
         forkLabel: 'auto_dream',
-        skipTranscript: true,
-        overrides: { abortController },
-        onMessage: makeDreamProgressWatcher(taskId, setAppState),
+        skipTranscript: true, // 不需要持久化对话记录
+        overrides: { abortController }, // 
+        onMessage: makeDreamProgressWatcher(taskId, setAppState), // 每收到一条非 stream_event 的消息就调用它，提取文本、统计 tool_use 数量、收集 Edit/Write 的 file_path，然后调用 addDreamTurn 更新 DreamTask 的 UI 状态
       })
 
       completeDreamTask(taskId, setAppState)

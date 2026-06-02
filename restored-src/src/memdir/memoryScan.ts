@@ -37,12 +37,12 @@ export async function scanMemoryFiles(
   signal: AbortSignal,
 ): Promise<MemoryHeader[]> {
   try {
-    const entries = await readdir(memoryDir, { recursive: true })
+    const entries = await readdir(memoryDir, { recursive: true }) // read directory，读取一个目录下的所有文件和子目录名
     const mdFiles = entries.filter(
       f => f.endsWith('.md') && basename(f) !== 'MEMORY.md',
     )
 
-    const headerResults = await Promise.allSettled(
+    const headerResults = await Promise.allSettled( // 有一个失败，不炸，继续等其他的，而 all 则  整体 reject
       mdFiles.map(async (relativePath): Promise<MemoryHeader> => {
         const filePath = join(memoryDir, relativePath)
         const { content, mtimeMs } = await readFileInRange(
@@ -66,7 +66,7 @@ export async function scanMemoryFiles(
     return headerResults
       .filter(
         (r): r is PromiseFulfilledResult<MemoryHeader> =>
-          r.status === 'fulfilled',
+          r.status === 'fulfilled', // 'fulfilled' 或 'rejected'
       )
       .map(r => r.value)
       .sort((a, b) => b.mtimeMs - a.mtimeMs)
@@ -80,12 +80,14 @@ export async function scanMemoryFiles(
  * Format memory headers as a text manifest: one line per file with
  * [type] filename (timestamp): description. Used by both the recall
  * selector prompt and the extraction-agent prompt.
+ * 
+ * 目录阶段，廉价、全量
  */
 export function formatMemoryManifest(memories: MemoryHeader[]): string {
   return memories
     .map(m => {
-      const tag = m.type ? `[${m.type}] ` : ''
-      const ts = new Date(m.mtimeMs).toISOString()
+      const tag = m.type ? `[${m.type}] ` : '' // user, feedback, project
+      const ts = new Date(m.mtimeMs).toISOString() // e.g. 2026-04-30T08:01:44.954Z
       return m.description
         ? `- ${tag}${m.filename} (${ts}): ${m.description}`
         : `- ${tag}${m.filename} (${ts})`

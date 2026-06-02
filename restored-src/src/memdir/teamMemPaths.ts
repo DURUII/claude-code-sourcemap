@@ -1,5 +1,5 @@
-import { lstat, realpath } from 'fs/promises'
-import { dirname, join, resolve, sep } from 'path'
+import { lstat, realpath } from 'fs/promises' // 带 symlink
+import { dirname, join, resolve, sep } from 'path' // 快速过滤明显的 .. 穿越，深度防御 symlink 逃逸
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
 import { getErrnoCode } from '../utils/errors.js'
 import { getAutoMemPath, isAutoMemoryEnabled } from './paths.js'

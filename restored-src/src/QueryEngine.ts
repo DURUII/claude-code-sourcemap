@@ -1,11 +1,11 @@
-import { feature } from 'bun:bundle'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
-import { randomUUID } from 'crypto'
-import last from 'lodash-es/last.js'
+import { feature } from 'bun:bundle' // dead code elimination
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs' // image, doc, tool_use, tool_result...
+import { randomUUID } from 'crypto' // for session&message: system_init, user replay, compact_boundary, max_turns error, max_budget error, structured_output error, result...
+import last from 'lodash-es/last.js' // tree-shaking
 import {
   getSessionId,
   isSessionPersistenceDisabled,
-} from 'src/bootstrap/state.js'
+} from 'src/bootstrap/state.js' // 进程级别的单例，除非 resume or clear 
 import type {
   PermissionMode,
   SDKCompactBoundaryMessage,
@@ -13,27 +13,27 @@ import type {
   SDKPermissionDenial,
   SDKStatus,
   SDKUserMessageReplay,
-} from 'src/entrypoints/agentSdkTypes.js'
-import { accumulateUsage, updateUsage } from 'src/services/api/claude.js'
-import type { NonNullableUsage } from 'src/services/api/logging.js'
-import { EMPTY_USAGE } from 'src/services/api/logging.js'
-import stripAnsi from 'strip-ansi'
-import type { Command } from './commands.js'
+} from 'src/entrypoints/agentSdkTypes.js' // Desktop also uses SDK, permission mode: default/acceptEdits/bypassPermissions/plan
+import { accumulateUsage, updateUsage } from 'src/services/api/claude.js' // updateUsage(上次usage, 这次delta)
+import type { NonNullableUsage } from 'src/services/api/logging.js' // 类型
+import { EMPTY_USAGE } from 'src/services/api/logging.js' // 归零
+import stripAnsi from 'strip-ansi' // 去掉字符串中的 ANSI 转义码（颜色、光标控制等）
+import type { Command } from './commands.js' // slash 命令和 skill 的统一类型；prompt 类 shouldQuery=true
 import { getSlashCommandToolSkills } from './commands.js'
 import {
   LOCAL_COMMAND_STDERR_TAG,
   LOCAL_COMMAND_STDOUT_TAG,
-} from './constants/xml.js'
+} from './constants/xml.js' // 不是用户发的自然语言
 import {
   getModelUsage,
   getTotalAPIDuration,
   getTotalCost,
 } from './cost-tracker.js'
-import type { CanUseToolFn } from './hooks/useCanUseTool.js'
+import type { CanUseToolFn } from './hooks/useCanUseTool.js' 
 import { loadMemoryPrompt } from './memdir/memdir.js'
-import { hasAutoMemPathOverride } from './memdir/paths.js'
-import { query } from './query.js'
-import { categorizeRetryableAPIError } from './services/api/errors.js'
+import { hasAutoMemPathOverride } from './memdir/paths.js' //  SDK 提供了自定义 system prompt + 设置了 memory 目录时
+import { query } from './query.js' // agentic loop
+import { categorizeRetryableAPIError } from './services/api/errors.js' // 把 API 的 HTTP 错误码翻译成 SDK 消费者能理解的错误类别
 import type { MCPServerConnection } from './services/mcp/types.js'
 import type { AppState } from './state/AppState.js'
 import { type Tools, type ToolUseContext, toolMatchesName } from './Tool.js'

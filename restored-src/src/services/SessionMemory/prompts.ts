@@ -8,6 +8,8 @@ import { logError } from '../../utils/log.js'
 const MAX_SECTION_LENGTH = 2000
 const MAX_TOTAL_SESSION_MEMORY_TOKENS = 12000
 
+// 控制是否在对话过程中提取笔记，控制 compact 时是否用笔记代替 LLM 摘要
+// messages 是会话历史，但 compact 会把它整个删掉；session memory 文件里存着之前提取的关键信息，把它注入 compact 后的对话首部
 export const DEFAULT_SESSION_MEMORY_TEMPLATE = `
 # Session Title
 _A short and distinctive 5-10 word descriptive title for the session. Super info dense, no filler_

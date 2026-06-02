@@ -1,10 +1,11 @@
-import axios from 'axios'
-import { getOauthConfig } from '../constants/oauth.js'
+// 用户触发远程会话操作时才执行
+import axios from 'axios' // axios 是一个基于 Promise 的 HTTP 客户端库，用来在 Node.js 或浏览器中发起 HTTP 请求
+import { getOauthConfig } from '../constants/oauth.js' // API 地址，登录跳转，MCP 代理，环境
 import type { SDKMessage } from '../entrypoints/agentSdkTypes.js'
 import { logForDebugging } from '../utils/debug.js'
 import { getOAuthHeaders, prepareApiRequest } from '../utils/teleport/api.js'
 
-export const HISTORY_PAGE_SIZE = 100
+export const HISTORY_PAGE_SIZE = 100 // 用于远程会话
 
 export type HistoryPage = {
   /** Chronological order within the page. */
@@ -36,7 +37,7 @@ export async function createHistoryAuthCtx(
     baseUrl: `${getOauthConfig().BASE_API_URL}/v1/sessions/${sessionId}/events`,
     headers: {
       ...getOAuthHeaders(accessToken),
-      'anthropic-beta': 'ccr-byoc-2025-07-29',
+      'anthropic-beta': 'ccr-byoc-2025-07-29', // 
       'x-organization-uuid': orgUUID,
     },
   }

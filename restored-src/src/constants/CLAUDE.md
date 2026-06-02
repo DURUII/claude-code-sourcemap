@@ -1,0 +1,5 @@
+- getSessionStartDate 用 memoize，午夜过后系统提示词里写的还是旧日期，一个用户几乎注意不到的错误日期，比每次响应都慢更重要，stale wins
+- Effort 符号：○ (Low) → ◐ (Medium) → ● (High) → ◉ (Max, Opus 4.6 only)
+- "eep text between tool calls to ≤25 words. Keep final responses to ≤100 words unless the task requires more detail." research shows ~1.2% output token reduction vs research shows ~1.2% output token reduction vs qualitative "be concise"
+- src/services/api/promptCacheBreakDetection.ts: checkResponseForCacheBreak: 如果 tokenDrop < 2000 tokens → 忽略, 如果 cacheReadTokens >= prevCacheRead * 0.95, 会上报 tengu_prompt_cache_break 事件，并且用 diff 工具生成一个 unified diff 文件写到临时目录：1. 按 querySource 隔离；2. 排除误报的机制；3. TTL 推断；4. per-tool 哈希
+- 客户端指纹是 Zig Native 层在请求真正发出去的那一瞬间塞进去的

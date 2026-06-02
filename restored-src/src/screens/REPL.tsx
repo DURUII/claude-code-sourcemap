@@ -1282,7 +1282,7 @@ export function REPL({
     maybeLoadOlder
   } = feature('KAIROS') ?
   // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useAssistantHistory({
+  useAssistantHistory({ // 拉远程历史
     config: remoteSessionConfig,
     setMessages,
     scrollRef,

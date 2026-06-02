@@ -448,6 +448,7 @@ export function initExtractMemories(): void {
               100
             ).toFixed(1)
           : '0.0'
+      // 缓存命中率，
       logForDebugging(
         `[extractMemories] finished — ${writtenPaths.length} files written, cache: read=${result.totalUsage.cache_read_input_tokens} create=${result.totalUsage.cache_creation_input_tokens} input=${result.totalUsage.input_tokens} (${hitPct}% hit)`,
       )

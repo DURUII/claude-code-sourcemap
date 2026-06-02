@@ -1,9 +1,9 @@
 import { feature } from 'bun:bundle'
-import { logForDebugging } from '../utils/debug.js'
+import { logForDebugging } from '../utils/debug.js' // to ~/.claude/debug/<session-id>.txt
 import { errorMessage } from '../utils/errors.js'
-import { getDefaultSonnetModel } from '../utils/model/model.js'
-import { sideQuery } from '../utils/sideQuery.js'
-import { jsonParse } from '../utils/slowOperations.js'
+import { getDefaultSonnetModel } from '../utils/model/model.js' // 快速、便宜、够用
+import { sideQuery } from '../utils/sideQuery.js' // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/using
+import { jsonParse } from '../utils/slowOperations.js' // 作用域结束自动调用  _[Symbol.dispose]()，如果耗时 > 阈值调用 logForDebugging 输出
 import {
   formatMemoryManifest,
   type MemoryHeader,
@@ -15,6 +15,7 @@ export type RelevantMemory = {
   mtimeMs: number
 }
 
+// 使用文档不重要，踩坑记录重要
 const SELECT_MEMORIES_SYSTEM_PROMPT = `You are selecting memories that will be useful to Claude Code as it processes a user's query. You will be given the user's query and a list of available memory files with their filenames and descriptions.
 
 Return a list of filenames for the memories that will clearly be useful to Claude Code as it processes the user's query (up to 5). Only include memories that you are certain will be helpful based on their name and description.
@@ -39,9 +40,9 @@ Return a list of filenames for the memories that will clearly be useful to Claud
 export async function findRelevantMemories(
   query: string,
   memoryDir: string,
-  signal: AbortSignal,
+  signal: AbortSignal, // https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
   recentTools: readonly string[] = [],
-  alreadySurfaced: ReadonlySet<string> = new Set(),
+  alreadySurfaced: ReadonlySet<string> = new Set(), // 避免重复选择
 ): Promise<RelevantMemory[]> {
   const memories = (await scanMemoryFiles(memoryDir, signal)).filter(
     m => !alreadySurfaced.has(m.filePath),
@@ -68,7 +69,7 @@ export async function findRelevantMemories(
     const { logMemoryRecallShape } =
       require('./memoryShapeTelemetry.js') as typeof import('./memoryShapeTelemetry.js')
     /* eslint-enable @typescript-eslint/no-require-imports */
-    logMemoryRecallShape(memories, selected)
+    logMemoryRecallShape(memories, selected) // 记忆召回与写入
   }
 
   return selected.map(m => ({ path: m.filePath, mtimeMs: m.mtimeMs }))
@@ -91,14 +92,14 @@ async function selectRelevantMemories(
   // description → false positive).
   const toolsSection =
     recentTools.length > 0
-      ? `\n\nRecently used tools: ${recentTools.join(', ')}`
+      ? `\n\nRecently used tools: ${recentTools.join(', ')}` // e.g. ["Bash", "Read", "Write", " mcp__chrome-devtools__take_snapshot"], 无障碍访问
       : ''
 
   try {
     const result = await sideQuery({
       model: getDefaultSonnetModel(),
       system: SELECT_MEMORIES_SYSTEM_PROMPT,
-      skipSystemPromptPrefix: true,
+      skipSystemPromptPrefix: true, // 跳过 Claude Code 的 CLI system prompt 前缀，前缀会让 Sonnet 以为自己是 Claude Code 主体，可能影响选择行为（比如试图调用工具、回复用户等），而不是安静地输出 JSON
       messages: [
         {
           role: 'user',

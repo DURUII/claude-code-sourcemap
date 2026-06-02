@@ -20,7 +20,7 @@ export type NativeModule = {
 // Lazy: defers dlopen until first call. The .node binary links against
 // CoreGraphics/ImageIO on darwin; resolving that at module-eval time blocks
 // startup because imagePaste.ts pulls this into the REPL chunk via static
-// import. Same pattern as audio-capture-src/index.ts.
+// import. Same pattern as audio-capture-src/index.ts. 模块作用域的懒初始化缓存
 let cachedModule: NativeModule | null = null
 let loadAttempted = false
 
