@@ -29,7 +29,7 @@ import {
 } from './bootstrap/state.js'
 import type { ModelUsage } from './entrypoints/agentSdkTypes.js'
 import {
-  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, //  编译期的手动审查标记，强迫开发者在把字符串发到分析服务器之前，停下来想清楚"这个值里不会有用户代码或文件路径"
   logEvent,
 } from './services/analytics/index.js'
 import { getAdvisorUsage } from './utils/advisor.js'

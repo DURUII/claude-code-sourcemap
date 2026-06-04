@@ -4213,7 +4213,7 @@ You have exited auto mode. The user may now want to interact more directly. You 
         createUserMessage({ content: parts.join('\n\n'), isMeta: true }),
       ])
     }
-    case 'mcp_instructions_delta': {
+    case 'mcp_instructions_delta': { // 附件渲染为 user 消息，isMeta: true 即 UI 上被隐藏
       const parts: string[] = []
       if (attachment.addedBlocks.length > 0) {
         parts.push(
