@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
-import uniqBy from 'lodash-es/uniqBy.js'
+import uniqBy from 'lodash-es/uniqBy.js' // ./demo/01-uniqBy.ts
 import { dirname } from 'path'
 import { getProjectRoot } from 'src/bootstrap/state.js'
 import {
@@ -8,7 +8,7 @@ import {
   findCommand,
   getCommands,
   type PromptCommand,
-} from 'src/commands.js'
+} from 'src/commands.js' // commands 是对 slash 命令、Skill、MCP 工具的统一抽象，分 PromptCommand，LocalCommand，LocalJSXCommand 几个类别
 import type {
   Tool,
   ToolCallProgress,
@@ -25,14 +25,14 @@ import type {
   SystemMessage,
   UserMessage,
 } from 'src/types/message.js'
-import { logForDebugging } from 'src/utils/debug.js'
+import { logForDebugging } from 'src/utils/debug.js' // data, level, message, 默认写到 debug/<sessionId>.txt 或 stderr
 import type { PermissionDecision } from 'src/utils/permissions/PermissionResult.js'
-import { getRuleByContentsForTool } from 'src/utils/permissions/permissions.js'
+import { getRuleByContentsForTool } from 'src/utils/permissions/permissions.js' // 权限决策 → 持久化为 Rule,将工具输入的具体参数（URL、命令前缀、Skill 名称等）转换为一条 ruleContent 字符串，然后去匹配 settings.json 中配置的具体 allow/deny/ask 规则
 import {
-  isOfficialMarketplaceName,
-  parsePluginIdentifier,
-} from 'src/utils/plugins/pluginIdentifier.js'
-import { buildPluginCommandTelemetryFields } from 'src/utils/telemetry/pluginTelemetry.js'
+  isOfficialMarketplaceName, // 白名单
+  parsePluginIdentifier, // lastUpdated
+} from 'src/utils/plugins/pluginIdentifier.js' 
+import { buildPluginCommandTelemetryFields } from 'src/utils/telemetry/pluginTelemetry.js' // 有哪些 field
 import { z } from 'zod/v4'
 import {
   addInvokedSkill,
@@ -40,24 +40,24 @@ import {
   getSessionId,
 } from '../../bootstrap/state.js'
 import { COMMAND_MESSAGE_TAG } from '../../constants/xml.js'
-import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
+import type { CanUseToolFn } from '../../hooks/useCanUseTool.js' // 门控，接收一个工具调用请求，返回一个 PermissionDecision
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
   logEvent,
 } from '../../services/analytics/index.js'
-import { getAgentContext } from '../../utils/agentContext.js'
+import { getAgentContext } from '../../utils/agentContext.js' // agent 身份信息，AsyncLocalStorage 异步执行链隔离 而不是 AppState 
 import { errorMessage } from '../../utils/errors.js'
 import {
   extractResultText,
   prepareForkedCommandContext,
 } from '../../utils/forkedAgent.js'
-import { parseFrontmatter } from '../../utils/frontmatterParser.js'
-import { lazySchema } from '../../utils/lazySchema.js'
+import { parseFrontmatter } from '../../utils/frontmatterParser.js' // Skill、Command、Agent、Memory、CLAUDE.md 的 frontmatter
+import { lazySchema } from '../../utils/lazySchema.js' // 第一次调用才构造，之后用缓存
 import { createUserMessage, normalizeMessages } from '../../utils/messages.js'
-import type { ModelAlias } from '../../utils/model/aliases.js'
+import type { ModelAlias } from '../../utils/model/aliases.js' // /eɪliəs/
 import { resolveSkillModelOverride } from '../../utils/model/model.js'
-import { recordSkillUsage } from '../../utils/suggestions/skillUsageTracking.js'
+import { recordSkillUsage } from '../../utils/suggestions/skillUsageTracking.js' // 和 autocomplete 有关，持久化到 globalConfig；近期高频使用的 skill 会排在 autocomplete 菜单顶部
 import { createAgentId } from '../../utils/uuid.js'
 import { runAgent } from '../AgentTool/runAgent.js'
 import {
@@ -77,6 +77,9 @@ import {
 /**
  * Gets all commands including MCP skills/prompts from AppState.
  * SkillTool needs this because getCommands() only returns local/bundled skills.
+ * 
+ * 1. context.getAppState() 是一个 live read，每次都调用 store.getState()，拿到的永远是当前最新状态
+ * 2. tool.call，可以 ctx.getAppState & ctx.setAppState
  */
 async function getAllCommands(context: ToolUseContext): Promise<Command[]> {
   // Only include MCP skills (loadedFrom === 'mcp'), not plain MCP prompts.
@@ -96,6 +99,7 @@ async function getAllCommands(context: ToolUseContext): Promise<Command[]> {
 // Re-export Progress from centralized types to break import cycles
 export type { SkillToolProgress as Progress } from '../../types/tools.js'
 
+// onProgress -> REPL 层的状态管理 Message[]
 import type { SkillToolProgress as Progress } from '../../types/tools.js'
 
 // Conditional require for remote skill modules — static imports here would
@@ -105,7 +109,7 @@ import type { SkillToolProgress as Progress } from '../../types/tools.js'
 // feature('EXPERIMENTAL_SKILL_SEARCH') guards, so remoteSkillModules is
 // non-null at every call site.
 /* eslint-disable @typescript-eslint/no-require-imports */
-const remoteSkillModules = feature('EXPERIMENTAL_SKILL_SEARCH')
+const remoteSkillModules = feature('EXPERIMENTAL_SKILL_SEARCH') // remote skill 是搜索服务发现、按需下载的，本地 skill 是扫本机目录发现的
   ? {
       ...(require('../../services/skillSearch/remoteSkillState.js') as typeof import('../../services/skillSearch/remoteSkillState.js')),
       ...(require('../../services/skillSearch/remoteSkillLoader.js') as typeof import('../../services/skillSearch/remoteSkillLoader.js')),
@@ -127,7 +131,7 @@ async function executeForkedSkill(
   canUseTool: CanUseToolFn,
   parentMessage: AssistantMessage,
   onProgress?: ToolCallProgress<Progress>,
-): Promise<ToolResult<Output>> {
+): Promise<ToolResult<Output>> { // data, newMessages?, contextModifier?, mcpMeta?
   const startTime = Date.now()
   const agentId = createAgentId()
   const isBuiltIn = builtInCommandNames().has(commandName)
@@ -143,11 +147,11 @@ async function executeForkedSkill(
           was_discovered:
             context.discoveredSkillNames?.has(commandName) ?? false,
         }
-      : {}
+      : {} // 实验性埋点字段：这次 skill 调用是系统自动发现的，还是用户手动指定的？
   const pluginMarketplace = command.pluginInfo
     ? parsePluginIdentifier(command.pluginInfo.repository).marketplace
     : undefined
-  const queryDepth = context.queryTracking?.depth ?? 0
+  const queryDepth = context.queryTracking?.depth ?? 0 // 防止技能无限递归嵌套
   const parentAgentId = getAgentContext()?.agentId
   logEvent('tengu_skill_tool_invocation', {
     command_name:
@@ -228,8 +232,8 @@ async function executeForkedSkill(
         getAppState: modifiedGetAppState,
       },
       canUseTool,
-      isAsync: false,
-      querySource: 'agent:custom',
+      isAsync: false, // 这个为什么是 false
+      querySource: 'agent:custom', // QuerySource 归因标签
       model: command.model as ModelAlias | undefined,
       availableTools: context.options.tools,
       override: { agentId },
@@ -322,6 +326,7 @@ export const outputSchema = lazySchema(() => {
     result: z.string().describe('The result from the forked skill execution'),
   })
 
+  // 先试第一个 schema，不匹配就试第二个，都不匹配就报错
   return z.union([inlineOutputSchema, forkedOutputSchema])
 })
 type OutputSchema = ReturnType<typeof outputSchema>
@@ -349,11 +354,10 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
   // used skill X" suggestions when X was actually invoked. Backseat classifies
   // downstream tool calls from the expanded prompt, not this wrapper, so the
   // name alone is sufficient — it just records that the skill fired.
-  toAutoClassifierInput: ({ skill }) => skill ?? '',
-
+  toAutoClassifierInput: ({ skill }) => skill ?? '', // classifyYoloAction -> allow/block
   async validateInput({ skill }, context): Promise<ValidationResult> {
     // Skills are just skill names, no arguments
-    const trimmed = skill.trim()
+    const trimmed = skill.trim() // 去前导斜杠/空白
     if (!trimmed) {
       return {
         result: false,
@@ -403,7 +407,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     if (!foundCommand) {
       return {
         result: false,
-        message: `Unknown skill: ${normalizedCommandName}`,
+        message: `Unknown skill: ${normalizedCommandName}`, // 这个是给 LLM 看的吗
         errorCode: 2,
       }
     }
@@ -413,7 +417,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
       return {
         result: false,
         message: `Skill ${normalizedCommandName} cannot be used with ${SKILL_TOOL_NAME} tool due to disable-model-invocation`,
-        errorCode: 4,
+        errorCode: 4, // 有副作用（side effect）的重操作，不应该让模型自作主张触发，如 /deploy, /fix-issue
       }
     }
 
@@ -422,7 +426,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
       return {
         result: false,
         message: `Skill ${normalizedCommandName} is not a prompt-based skill`,
-        errorCode: 5,
+        errorCode: 5, // 拦截的是代码实现的 skill
       }
     }
 
@@ -443,7 +447,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     const permissionContext = appState.toolPermissionContext
 
     // Look up the command object to pass as metadata
-    const commands = await getAllCommands(context)
+    const commands = await getAllCommands(context) // .filter() 数组操作，不是 I/O；通常 20-50 个 skill，数组遍历 + uniqBy
     const commandObj = findCommand(commandName, commands)
 
     // Helper function to check if a rule matches the skill
@@ -459,7 +463,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
         return true
       }
       // Check prefix match (e.g., "review:*" matches "review-pr 123")
-      if (normalizedRule.endsWith(':*')) {
+      if (normalizedRule.endsWith(':*')) { // 通配符匹配
         const prefix = normalizedRule.slice(0, -2) // Remove ':*'
         return commandName.startsWith(prefix)
       }
@@ -470,7 +474,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     const denyRules = getRuleByContentsForTool(
       permissionContext,
       SkillTool as Tool,
-      'deny',
+      'deny', // deny-first 拒绝规则优先级最高
     )
     for (const [ruleContent, rule] of denyRules.entries()) {
       if (ruleMatches(ruleContent)) {
@@ -493,7 +497,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
       feature('EXPERIMENTAL_SKILL_SEARCH') &&
       process.env.USER_TYPE === 'ant'
     ) {
-      const slug = remoteSkillModules!.stripCanonicalPrefix(commandName)
+      const slug = remoteSkillModules!.stripCanonicalPrefix(commandName) // _canonical_ 前缀
       if (slug !== null) {
         return {
           behavior: 'allow',
@@ -587,7 +591,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     // At this point, validateInput has already confirmed:
     // - Skill format is valid
     // - Skill exists
-    // - Skill can be loaded
+    // - Skill can be loaded 
     // - Skill doesn't have disableModelInvocation
     // - Skill is a prompt-based skill
 
@@ -616,7 +620,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     const command = findCommand(commandName, commands)
 
     // Track skill usage for ranking
-    recordSkillUsage(commandName)
+    recordSkillUsage(commandName) //  7 天半衰期指数衰减，~/.claude.json skillUsage 字段
 
     // Check if skill should run as a forked sub-agent
     if (command?.type === 'prompt' && command.context === 'fork') {
@@ -729,10 +733,10 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     const toolUseID = getToolUseIDFromParentMessage(
       parentMessage,
       SKILL_TOOL_NAME,
-    )
+    ) // AsyncLocalStorage, 发起这次 SkillTool 工具调用的 assistant message
 
     // Tag user messages with sourceToolUseID so they stay transient until this tool resolves
-    const newMessages = tagMessagesWithToolUseID(
+    const newMessages = tagMessagesWithToolUseID( // 让系统知道：这条 user message 是某次 SkillTool 工具调用产生的，不是用户真正手动输入的消息
       processedCommand.messages.filter(
         (m): m is UserMessage | AttachmentMessage | SystemMessage => {
           if (m.type === 'progress') {
@@ -756,7 +760,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
 
     logForDebugging(
       `SkillTool returning ${newMessages.length} newMessages for skill ${commandName}`,
-    )
+    ) 
 
     // Note: addInvokedSkill and registerSkillHooks are called inside
     // processPromptSlashCommand (via getMessagesForPromptSlashCommand), so
@@ -772,12 +776,12 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
         model,
       },
       newMessages,
-      contextModifier(ctx) {
+      contextModifier(ctx) { // contextModifier 修改的是 
         let modifiedContext = ctx
 
         // Update allowed tools if specified
         if (allowedTools.length > 0) {
-          // Capture the current getAppState to chain modifications properly
+          // Capture the current getAppState to chain modifications properly getAppState、mainLoopModel
           const previousGetAppState = modifiedContext.getAppState
           modifiedContext = {
             ...modifiedContext,
@@ -840,6 +844,8 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     }
   },
 
+  // 把 Tool 的 Output 类型转换成 Anthropic API 的 tool_result 格式，用于 resume / continue 场景下重建消息历史。
+  // 
   mapToolResultToToolResultBlockParam(
     result: Output,
     toolUseID: string,
@@ -871,7 +877,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
 // Allowlist of PromptCommand property keys that are safe and don't require permission.
 // If a skill has any property NOT in this set with a meaningful value, it requires
 // permission. This ensures new properties added to PromptCommand in the future
-// default to requiring permission until explicitly reviewed and added here.
+// 
 const SAFE_SKILL_PROPERTIES = new Set([
   // PromptCommand properties
   'type',
@@ -935,7 +941,7 @@ function skillHasOnlySafeProperties(command: Command): boolean {
 function isOfficialMarketplaceSkill(command: PromptCommand): boolean {
   if (command.source !== 'plugin' || !command.pluginInfo?.repository) {
     return false
-  }
+  } // 一个可安装、可分享、可版本化的扩展包。它可以包含很多东西：skills/、agents/、hooks/、MCP servers、LSP、monitors、bin、settings 等
   return isOfficialMarketplaceName(
     parsePluginIdentifier(command.pluginInfo.repository).marketplace,
   )
@@ -1078,7 +1084,16 @@ async function executeRemoteSkill(
   finalContent = finalContent.replace(
     /\$\{CLAUDE_SESSION_ID\}/g,
     getSessionId(),
-  )
+  ) 
+
+  /**
+   * finalContent
+   * 一方面，上下文压缩后，skill 内容需要恢复，重建 message 历史时能还原
+   * 另一方面，元信息消息，挂上当前 tool call 的 ID，返回给调用方合并进 message 历史
+   * <projectDir>/.claude/<sessionId>.jsonl
+   * 
+   * JSONL transcript 里只存 变化的部分（消息历史）
+   */
 
   // Register with compaction-preservation state. Use the cached file path so
   // post-compact restoration knows where the content came from. Must use

@@ -1,5 +1,5 @@
-import { memoize } from 'lodash-es'
-import type { Command } from 'src/commands.js'
+import { memoize } from 'lodash-es' // higher order function, 接受函数，返回函数，变体有 memoizeWithLRU 和 memoizeWithTTLAsync，cache 外部控制口
+import type { Command } from 'src/commands.js' // CommandBase & (PromptCommand | LocalCommand | LocalJSXCommand)
 import {
   getCommandName,
   getSkillToolCommands,
@@ -13,8 +13,8 @@ import {
 } from '../../services/analytics/index.js'
 import { count } from '../../utils/array.js'
 import { logForDebugging } from '../../utils/debug.js'
-import { toError } from '../../utils/errors.js'
-import { truncate } from '../../utils/format.js'
+import { toError } from '../../utils/errors.js' //  tsconfig.json 的 strict: false，catch (error) 捕获的值类型是 any
+import { truncate } from '../../utils/format.js' // 截断时追加省略号
 import { logError } from '../../utils/log.js'
 
 // Skill listing gets 1% of the context window (in characters)
@@ -27,6 +27,7 @@ export const DEFAULT_CHAR_BUDGET = 8_000 // Fallback: 1% of 200k × 4
 // tokens without improving match rate. Applies to all entries, including bundled,
 // since the cap is generous enough to preserve the core use case.
 export const MAX_LISTING_DESC_CHARS = 250
+// 1% 的 token 预算，每个 skill 描述最多 250 字符
 
 export function getCharBudget(contextWindowTokens?: number): number {
   if (Number(process.env.SLASH_COMMAND_TOOL_CHAR_BUDGET)) {
@@ -47,7 +48,7 @@ function getCommandDescription(cmd: Command): string {
   return desc.length > MAX_LISTING_DESC_CHARS
     ? desc.slice(0, MAX_LISTING_DESC_CHARS - 1) + '\u2026'
     : desc
-}
+} // '\u2026' -> '…'
 
 function formatCommandDescription(cmd: Command): string {
   // Debug: log if userFacingName differs from cmd.name for plugin skills
@@ -55,7 +56,7 @@ function formatCommandDescription(cmd: Command): string {
   if (
     cmd.name !== displayName &&
     cmd.type === 'prompt' &&
-    cmd.source === 'plugin'
+    cmd.source === 'plugin' // 'builtin' | 'mcp' | 'plugin' | 'bundled'
   ) {
     logForDebugging(
       `Skill prompt: showing "${cmd.name}" (userFacingName="${displayName}")`,
@@ -65,7 +66,7 @@ function formatCommandDescription(cmd: Command): string {
   return `- ${cmd.name}: ${getCommandDescription(cmd)}`
 }
 
-const MIN_DESC_LENGTH = 20
+const MIN_DESC_LENGTH = 20 // 预算紧张到每个描述只剩不到 20 个字符，这么短的截断没有信息量，不如直接只显示 skill 名称
 
 export function formatCommandsWithinBudget(
   commands: Command[],
@@ -75,7 +76,7 @@ export function formatCommandsWithinBudget(
 
   const budget = getCharBudget(contextWindowTokens)
 
-  // Try full descriptions first
+  // 先假设能放下放不下再裁减
   const fullEntries = commands.map(cmd => ({
     cmd,
     full: formatCommandDescription(cmd),
@@ -115,7 +116,7 @@ export function formatCommandsWithinBudget(
   }
 
   const restNameOverhead =
-    restCommands.reduce((sum, cmd) => sum + stringWidth(cmd.name) + 4, 0) +
+    restCommands.reduce((sum, cmd) => sum + stringWidth(cmd.name) + 4, 0) + // 每个 skill 占一行，格式是 - name: description，4 字符固定开销
     (restCommands.length - 1)
   const availableForDescs = remainingBudget - restNameOverhead
   const maxDescLen = Math.floor(availableForDescs / restCommands.length)
@@ -163,6 +164,7 @@ export function formatCommandsWithinBudget(
   return commands
     .map((cmd, i) => {
       // Bundled skills always get full descriptions
+      // 见 src/skills/bundled
       if (bundledIndices.has(i)) return fullEntries[i]!.full
       const description = getCommandDescription(cmd)
       return `- ${cmd.name}: ${truncate(description, maxDescLen)}`
@@ -170,7 +172,15 @@ export function formatCommandsWithinBudget(
     .join('\n')
 }
 
-export const getPrompt = memoize(async (_cwd: string): Promise<string> => {
+/**
+ * 1. LocalCommand / LocalJSXCommand → 本地执行，不进 LLM；PromptCommand 是 LLM 调的 Tool
+ * 2. 有冲突或跨 plugin 时必须用 plugin:skill 形式消歧，e.g. ms-office-suite:pdf
+ * 3. prompt 工程：先产出 Skill 工具的 tool_use 块，然后才写 text 响应
+ * 4. 场景：用户问"帮我审查一下这个 PR"，LLM 可能在文字里说"好的，我来用 review-pr 这个 skill"。规则要求它在说这话的同一轮（或之前轮次）必须已经发出过 Skill(skill="review-pr") 的 tool_use。
+ * 5. inline skill 约等于 read；forked skill 是 sub-agent
+ * 6. 对话历史误判：LLM 可能在自己之前的对话里看到过 /clear 触发的 local-command-stdout 输出，模式匹配出"用户用了 /clear"——如果没这句提示，它可能反手调 Skill(skill="clear")，但 clear 不是 skill，validateInput 走 findCommand 会失败；边界澄清：LLM 看到所有 /-prefixed 都是命令，但它需要知道只有部分（user-invocable skills）是它能调的，另一部分（CLI）已经执行完了。
+ */
+export const getPrompt = memoize(async (_cwd: string): Promise<string> => { // python 的语法糖可以写成 @memoize
   return `Execute a skill within the main conversation
 
 When users ask you to perform tasks, check if any of the available skills match. Skills provide specialized capabilities and domain knowledge.
@@ -202,9 +212,9 @@ export async function getSkillToolInfo(cwd: string): Promise<{
   const agentCommands = await getSkillToolCommands(cwd)
 
   return {
-    totalCommands: agentCommands.length,
+    totalCommands: agentCommands.length, 
     includedCommands: agentCommands.length,
-  }
+  } // 兼容未来可能出现 N 个 command，只放进 prompt M 个的场景
 }
 
 // Returns the commands included in the SkillTool prompt.
@@ -223,7 +233,7 @@ export async function getSkillInfo(cwd: string): Promise<{
   includedSkills: number
 }> {
   try {
-    const skills = await getSlashCommandToolSkills(cwd)
+    const skills = await getSlashCommandToolSkills(cwd) // command 是底层执行/注册模型；skill 被实现成 prompt command
 
     return {
       totalSkills: skills.length,
