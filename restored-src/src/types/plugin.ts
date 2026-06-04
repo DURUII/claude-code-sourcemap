@@ -63,6 +63,8 @@ export type LoadedPlugin = {
   skillsPaths?: string[] // Additional skill paths from manifest
   outputStylesPath?: string
   outputStylesPaths?: string[] // Additional output style paths from manifest
+  workflowsPath?: string
+  workflowsPaths?: string[] // Additional workflow paths from manifest
   hooksConfig?: HooksSettings
   mcpServers?: Record<string, McpServerConfig>
   lspServers?: Record<string, LspServerConfig>
@@ -75,6 +77,7 @@ export type PluginComponent =
   | 'skills'
   | 'hooks'
   | 'output-styles'
+  | 'workflows'
 
 /**
  * Discriminated union of plugin error types.

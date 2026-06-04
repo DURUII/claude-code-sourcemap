@@ -1376,6 +1376,7 @@ export async function createPluginFromPath(
     agentsDirExists,
     skillsDirExists,
     outputStylesDirExists,
+    workflowsDirExists,
   ] = await Promise.all([
     !manifest.commands ? pathExists(join(pluginPath, 'commands')) : false,
     !manifest.agents ? pathExists(join(pluginPath, 'agents')) : false,
@@ -1383,6 +1384,7 @@ export async function createPluginFromPath(
     !manifest.outputStyles
       ? pathExists(join(pluginPath, 'output-styles'))
       : false,
+    !manifest.workflows ? pathExists(join(pluginPath, 'workflows')) : false,
   ])
 
   const commandsPath = join(pluginPath, 'commands')
@@ -1607,6 +1609,32 @@ export async function createPluginFromPath(
 
     if (validPaths.length > 0) {
       plugin.outputStylesPaths = validPaths
+    }
+  }
+
+  const workflowsPath = join(pluginPath, 'workflows')
+  if (workflowsDirExists) {
+    plugin.workflowsPath = workflowsPath
+  }
+
+  if (manifest.workflows) {
+    const workflowPaths = Array.isArray(manifest.workflows)
+      ? manifest.workflows
+      : [manifest.workflows]
+
+    const validPaths = await validatePluginPaths(
+      workflowPaths,
+      pluginPath,
+      manifest.name,
+      source,
+      'workflows',
+      'Workflow',
+      'specified in manifest but',
+      errors,
+    )
+
+    if (validPaths.length > 0) {
+      plugin.workflowsPaths = validPaths
     }
   }
 
@@ -2676,6 +2704,27 @@ async function finishLoadingPluginFromPath(
       }
     }
 
+    if (entry.workflows) {
+      const workflowPaths = Array.isArray(entry.workflows)
+        ? entry.workflows
+        : [entry.workflows]
+
+      const validPaths = await validatePluginPaths(
+        workflowPaths,
+        pluginPath,
+        entry.name,
+        pluginId,
+        'workflows',
+        'Workflow',
+        'from marketplace entry',
+        errors,
+      )
+
+      if (validPaths.length > 0) {
+        plugin.workflowsPaths = validPaths
+      }
+    }
+
     // Process inline hooks from marketplace entry
     if (entry.hooks) {
       plugin.hooksConfig = entry.hooks as HooksSettings
@@ -2687,14 +2736,15 @@ async function finishLoadingPluginFromPath(
       entry.agents ||
       entry.skills ||
       entry.hooks ||
-      entry.outputStyles)
+      entry.outputStyles ||
+      entry.workflows)
   ) {
-    // In non-strict mode with plugin.json, marketplace entries for commands/agents/skills/hooks/outputStyles are conflicts
+    // In non-strict mode with plugin.json, marketplace entries for commands/agents/skills/hooks/outputStyles/workflows are conflicts
     const error = new Error(
-      `Plugin ${entry.name} has both plugin.json and marketplace manifest entries for commands/agents/skills/hooks/outputStyles. This is a conflict.`,
+      `Plugin ${entry.name} has both plugin.json and marketplace manifest entries for commands/agents/skills/hooks/outputStyles/workflows. This is a conflict.`,
     )
     logForDebugging(
-      `Plugin ${entry.name} has both plugin.json and marketplace manifest entries for commands/agents/skills/hooks/outputStyles. This is a conflict.`,
+      `Plugin ${entry.name} has both plugin.json and marketplace manifest entries for commands/agents/skills/hooks/outputStyles/workflows. This is a conflict.`,
       { level: 'error' },
     )
     logError(error)
@@ -2898,6 +2948,30 @@ async function finishLoadingPluginFromPath(
       if (validPaths.length > 0) {
         plugin.outputStylesPaths = [
           ...(plugin.outputStylesPaths || []),
+          ...validPaths,
+        ]
+      }
+    }
+
+    if (entry.workflows) {
+      const workflowPaths = Array.isArray(entry.workflows)
+        ? entry.workflows
+        : [entry.workflows]
+
+      const validPaths = await validatePluginPaths(
+        workflowPaths,
+        pluginPath,
+        entry.name,
+        pluginId,
+        'workflows',
+        'Workflow',
+        'from marketplace entry',
+        errors,
+      )
+
+      if (validPaths.length > 0) {
+        plugin.workflowsPaths = [
+          ...(plugin.workflowsPaths || []),
           ...validPaths,
         ]
       }

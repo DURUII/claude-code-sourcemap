@@ -523,6 +523,29 @@ const PluginManifestOutputStylesSchema = lazySchema(() =>
   }),
 )
 
+/**
+ * Schema for additional workflow definitions in plugin manifest.
+ *
+ * Allows plugins to specify workflow script files or directories beyond those
+ * in the standard workflows/ directory.
+ */
+const PluginManifestWorkflowsSchema = lazySchema(() =>
+  z.object({
+    workflows: z.union([
+      RelativePath().describe(
+        'Path to additional workflow script or directory (in addition to those in the workflows/ directory, if it exists), relative to the plugin root',
+      ),
+      z
+        .array(
+          RelativePath().describe(
+            'Path to additional workflow scripts or directories (in addition to those in the workflows/ directory, if it exists), relative to the plugin root',
+          ),
+        )
+        .describe('List of paths to additional workflow scripts or directories'),
+    ]),
+  }),
+)
+
 // Helper validators for LSP config
 const nonEmptyString = lazySchema(() => z.string().min(1))
 const fileExtension = lazySchema(() =>
@@ -889,6 +912,7 @@ export const PluginManifestSchema = lazySchema(() =>
     ...PluginManifestAgentsSchema().partial().shape,
     ...PluginManifestSkillsSchema().partial().shape,
     ...PluginManifestOutputStylesSchema().partial().shape,
+    ...PluginManifestWorkflowsSchema().partial().shape,
     ...PluginManifestChannelsSchema().partial().shape,
     ...PluginManifestMcpServerSchema().partial().shape,
     ...PluginManifestLspServerSchema().partial().shape,
