@@ -82,6 +82,8 @@ function fileHistoryEnabledSdk(): boolean {
  *
  * This must be called before the file is actually added or edited, so we can save
  * its contents before the edit.
+ * 
+ * 改文件前
  */
 export async function fileHistoryTrackEdit(
   updateFileHistoryState: (
@@ -194,6 +196,8 @@ export async function fileHistoryTrackEdit(
 
 /**
  * Adds a snapshot in the file history and backs up any modified tracked files.
+ * 
+ * 遍历所有被跟踪过的文件，检查变化（mtime 比上次备份新），创建新版本备份。
  */
 export async function fileHistoryMakeSnapshot(
   updateFileHistoryState: (
@@ -343,6 +347,8 @@ export async function fileHistoryMakeSnapshot(
 
 /**
  * Rewinds the file system to a previous snapshot.
+ * 
+ * 把所有被跟踪文件从备份拷回去，~/.claude/file-history/{sessionId}/
  */
 export async function fileHistoryRewind(
   updateFileHistoryState: (

@@ -35,7 +35,7 @@ import { MCP_CLIENT_METADATA_URL } from '../../constants/oauth.js'
 import { openBrowser } from '../../utils/browser.js'
 import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
 import { errorMessage, getErrnoCode } from '../../utils/errors.js'
-import * as lockfile from '../../utils/lockfile.js'
+import * as lockfile from '../../utils/lockfile.js' // 同一进程内的 JavaScript 是单线程的（event loop 模型），真正的并发发生在进程间；保护共享文件写入、服务发现、单实例保护
 import { logMCPDebug } from '../../utils/log.js'
 import { getPlatform } from '../../utils/platform.js'
 import { getSecureStorage } from '../../utils/secureStorage/index.js'

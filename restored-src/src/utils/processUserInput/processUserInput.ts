@@ -7,7 +7,7 @@ import type {
 import { randomUUID } from 'crypto'
 import type { QuerySource } from 'src/constants/querySource.js'
 import { logEvent } from 'src/services/analytics/index.js'
-import { getContentText } from 'src/utils/messages.js'
+import { getContentText } from 'src/utils/messages.js' // thinking/text/tool_use/text 异构数组，提取纯文字
 import {
   findCommand,
   getCommandName,
@@ -35,7 +35,7 @@ import {
   createAttachmentMessage,
   getAttachmentMessages,
 } from '../attachments.js'
-import type { PastedContent } from '../config.js'
+import type { PastedContent } from '../config.js' // pastedContents: Record<number, PastedContent>； 输入框渲染要多行/视觉折叠/可删除；历史文件存 sha256 指针
 import type { EffortValue } from '../effort.js'
 import { toArray } from '../generators.js'
 import {
@@ -44,7 +44,7 @@ import {
 } from '../hooks.js'
 import {
   createImageMetadataText,
-  maybeResizeAndDownsampleImageBlock,
+  maybeResizeAndDownsampleImageBlock, // png -> jpeg -> 压 dimensions
 } from '../imageResizer.js'
 import { storeImages } from '../imageStore.js'
 import {
@@ -109,7 +109,7 @@ export async function processUserInput({
    */
   preExpansionInput?: string
   mode: PromptInputMode
-  setToolJSX: SetToolJSXFn
+  setToolJSX: SetToolJSXFn // 渲染权
   context: ProcessUserInputContext
   pastedContents?: Record<number, PastedContent>
   ideSelection?: IDESelection
@@ -146,6 +146,17 @@ export async function processUserInput({
     setUserInputOnProcessing?.(inputString)
   }
 
+  /**
+   * 本地性能 debug，CLAUDE_CODE_PROFILE_QUERY=1 时激活，perf.mark 和 memorySnapshots
+   * Context loading
+   * Microcompact
+   * Query setup
+   * Tool schemas
+   * Message normalization
+   * Client creation
+   * Network TTFB
+   * Tool execution
+   */
   queryCheckpoint('query_process_user_input_base_start')
 
   const appState = context.getAppState()

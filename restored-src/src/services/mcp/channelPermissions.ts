@@ -81,7 +81,7 @@ const ID_ALPHABET = 'abcdefghijkmnopqrstuvwxyz'
 // launch thread: "this is why i bias to numbers, hard to have anything worse
 // than 80085"). Non-exhaustive, covers the send-to-your-boss-by-accident
 // tier. If a generated ID contains any of these, re-hash with a salt.
-// prettier-ignore
+// prettier-ignore 
 const ID_AVOID_SUBSTRINGS = [
   'fuck',
   'shit',
@@ -107,7 +107,7 @@ const ID_AVOID_SUBSTRINGS = [
   'pee',
   'wank',
   'anus',
-]
+] // 5 个随机字母可能拼出脏话，乐：https://stacker.news/items/1463045；手机端 shortRequestId 把它哈希压缩成 5 个字母
 
 function hashToId(input: string): string {
   // FNV-1a → uint32, then base-25 encode. Not crypto, just a stable
@@ -135,7 +135,7 @@ function hashToId(input: string): string {
  * keyboard modes (hex alternates a-f/0-9 → mode toggles). Re-hashes with
  * a salt suffix if the result contains a blocklisted substring — 5 random
  * letters can spell things you don't want in a text message to your phone.
- * toolUseIDs are `toolu_` + base64-ish; we hash rather than slice.
+ * toolUseIDs are `toolu_` + base64-ish; we hash rather than slice. 
  */
 export function shortRequestId(toolUseID: string): string {
   // 7 length-3 × 3 positions × 25² + 15 length-4 × 2 × 25 + 2 length-5
@@ -156,6 +156,9 @@ export function shortRequestId(toolUseID: string): string {
  * roughly 3 lines on a narrow phone screen. Full input is in the local
  * terminal dialog; the channel gets a summary so Write(5KB-file) doesn't
  * flood your texts. Server decides whether/how to show it.
+ * 
+ * 当权限确认请求转发到手机时，把工具输入序列化成 JSON 字符串，
+ * 截断到 200 字符，大约窄屏手机 3 行
  */
 export function truncateForPreview(input: unknown): string {
   try {

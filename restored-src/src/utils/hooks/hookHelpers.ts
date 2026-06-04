@@ -1,5 +1,6 @@
 import { z } from 'zod/v4'
 import type { Tool } from '../../Tool.js'
+import type { HookEvent } from '../../entrypoints/agentSdkTypes.js'
 import {
   SYNTHETIC_OUTPUT_TOOL_NAME,
   SyntheticOutputTool,
@@ -70,11 +71,12 @@ export function createStructuredOutputTool(): Tool {
 export function registerStructuredOutputEnforcement(
   setAppState: SetAppState,
   sessionId: string,
+  event: HookEvent = 'Stop',
 ): void {
   addFunctionHook(
     setAppState,
     sessionId,
-    'Stop',
+    event,
     '', // No matcher - applies to all stops
     messages => hasSuccessfulToolCall(messages, SYNTHETIC_OUTPUT_TOOL_NAME),
     `You MUST call the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool to complete this request. Call this tool now.`,

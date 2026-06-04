@@ -95,6 +95,8 @@ function extractTodosFromTranscript(messages: Message[]): TodoList {
 /**
  * Restore session state (file history, attribution, todos) from log on resume.
  * Used by both SDK (print.ts) and interactive (REPL.tsx, main.tsx) resume paths.
+ * 
+ * 把里面的各种快照/状态反序列化回 React 的 AppState 里
  */
 export function restoreSessionStateFromLog(
   result: ResumeResult,

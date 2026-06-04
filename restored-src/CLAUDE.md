@@ -1,2 +1,4 @@
+This is restored-src of claude v2.1.88 (2026-04-01)
+
 - `querySource` 可以理解为一次 LLM 模型请求的 entrypoint / purpose / attribution label，判断这次调用为什么发起、属于主对话/SDK/后台任务/agent/工具子请求/压缩摘要等哪条执行路径。
 - 暂不考虑 claude.ai 网页版的助手模式（feature('KAIROS')）相关功能及实现，因为会分散注意力，including Proactive, Brief, SendUserFile, Push 通知, --session-id / --continue 会话续接、关闭时不归档、assistant worker type、v1 bridge 强制、perpetual bridge、assistant 系统提示词 addendum、kairosEnabled 注入 AppState、session transcript flush、daily-log 模式。这些都是 claude.ai 网页版助手模式专属，CLI 里编译时直接 tree-shaken 掉了。

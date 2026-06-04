@@ -335,6 +335,8 @@ async function maybePersistLargeToolResult(
 
 /**
  * Generate a preview of content, truncating at a newline boundary when possible.
+ * 
+ * 截断
  */
 export function generatePreview(
   content: string,

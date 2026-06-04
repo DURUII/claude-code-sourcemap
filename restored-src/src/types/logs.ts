@@ -47,7 +47,7 @@ export type LogOption = {
   prNumber?: number // GitHub PR number linked to this session
   prUrl?: string // Full URL to the linked PR
   prRepository?: string // Repository in "owner/repo" format
-  mode?: 'coordinator' | 'normal' // Session mode for coordinator/normal detection
+  mode?: 'coordinator' | 'normal' // Session mode for coordinator/normal detection 普通会话模式和协调器模式
   worktreeSession?: PersistedWorktreeSession | null // Worktree state at session end (null = exited, undefined = never entered)
   contentReplacements?: ContentReplacementRecord[] // Replacement decisions for resume reconstruction
 }
