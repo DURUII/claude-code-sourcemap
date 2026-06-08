@@ -532,7 +532,7 @@ ${CYBER_RISK_INSTRUCTION}`,
       isMcpInstructionsDeltaEnabled()
         ? null
         : getMcpInstructionsSection(mcpClients),
-      getScratchpadInstructions(),
+      getScratchpadInstructions(), // scratchpad 是 LLM 的 /tmp，免权限确认 + 跨 worker 可见
       getFunctionResultClearingSection(model),
       SUMMARIZE_TOOL_RESULTS_SECTION,
       getProactiveSection(),

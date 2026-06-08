@@ -1,10 +1,10 @@
 import { z } from 'zod/v4'
-import { buildTool, type ToolDef } from '../../Tool.js'
+import { buildTool, type ToolDef } from '../../Tool.js' // 启动？并发？只读？可逆？权限？auto classifier？名字？
 import { cronToHuman } from '../../utils/cron.js'
 import { listAllCronTasks } from '../../utils/cronTasks.js'
 import { truncate } from '../../utils/format.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { getTeammateContext } from '../../utils/teammateContext.js'
+import { getTeammateContext } from '../../utils/teammateContext.js' // als/tmux
 import {
   buildCronListPrompt,
   CRON_LIST_DESCRIPTION,
@@ -23,10 +23,10 @@ const outputSchema = lazySchema(() =>
       z.object({
         id: z.string(),
         cron: z.string(),
-        humanSchedule: z.string(),
+        humanSchedule: z.string(), // 
         prompt: z.string(),
-        recurring: z.boolean().optional(),
-        durable: z.boolean().optional(),
+        recurring: z.boolean().optional(), // or one-shot
+        durable: z.boolean().optional(), // 持久化到 .claude/scheduled_tasks.json vs session-only
       }),
     ),
   }),

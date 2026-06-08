@@ -265,6 +265,14 @@ export function convertToSandboxRuntimeConfig(
   // it post-command in scrubBareGitRepoFiles() — planted files are gone before
   // unsandboxed git runs; inside the command, git is itself sandboxed.
   bareGitRepoScrubPaths.length = 0
+  /**
+   * Git 的 fsmonitor 特性允许在 git status 时执行外部监控程序，这是合法功能，但可以被利用来执行任意命令：
+   * 1. 攻击者（通过 LLM 之前的 tool 调用）在项目目录下创建 HEAD、objects/、refs/ 文件
+   * 2. 创建一个 .git/config，里面写 core.fsmonitor = malicious_command
+   * 3. Claude Code 执行 git status（这是 unsandboxed 的，不受沙箱限制）
+   * 4. git 检测到 cwd 是 bare repo → 读取 core.fsmonitor → 执行 malicious_command
+   * 5. 沙箱逃逸
+   */
   const bareGitRepoFiles = ['HEAD', 'objects', 'refs', 'hooks', 'config']
   for (const dir of cwd === originalCwd ? [originalCwd] : [originalCwd, cwd]) {
     for (const gitFile of bareGitRepoFiles) {

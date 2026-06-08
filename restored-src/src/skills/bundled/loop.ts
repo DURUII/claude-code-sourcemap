@@ -22,7 +22,7 @@ Examples:
   /loop check the deploy          (defaults to ${DEFAULT_INTERVAL})
   /loop check the deploy every 20m`
 
-function buildPrompt(args: string): string {
+function buildPrompt(args: string): string { // every + 合法时间的 clause。问题：中文时间？
   return `# /loop — schedule a recurring prompt
 
 Parse the input below into \`[interval] <prompt…>\` and schedule it with ${CRON_CREATE_TOOL_NAME}.

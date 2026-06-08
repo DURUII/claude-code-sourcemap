@@ -81,7 +81,7 @@ export class StreamingToolExecutor {
         block,
         assistantMessage,
         status: 'completed',
-        isConcurrencySafe: true,
+        isConcurrencySafe: true, // 运行时检查，有的是工具全是 true，有的是运行时检查，根据 parsed input 判断
         pendingProgress: [],
         results: [
           createUserMessage({

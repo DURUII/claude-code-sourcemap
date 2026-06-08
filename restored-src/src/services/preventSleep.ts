@@ -136,7 +136,7 @@ function spawnCaffeinate(): void {
     const thisProc = caffeinateProcess
     caffeinateProcess.on('error', err => {
       logForDebugging(`caffeinate spawn error: ${err.message}`)
-      if (caffeinateProcess === thisProc) caffeinateProcess = null
+      if (caffeinateProcess === thisProc) caffeinateProcess = null // async-callback 模式，caffeinateProcess 是模块级 let 绑定任何一行代码都能把它改成别的值
     })
 
     caffeinateProcess.on('exit', () => {

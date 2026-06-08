@@ -2320,6 +2320,12 @@ export function normalizeMessagesForAPI(
   // pass that cleans content, then validates in one shot.
   const withFilteredThinking =
     filterTrailingThinkingFromLastAssistant(withFilteredOrphans)
+  /**
+   * 硬性约束：
+   * assistant 消息不能以 thinking block 结尾；当 thinking 块还没结束时按下 Escape 取消，需要把尾部的 thinking/redacted_thinking 剥掉。
+   * text content blocks 必须包含非空白文本；当用户取消时，模型只来得及输出 "\n\n"，直接移除整条消息。
+   * 连续两条 assistant 消息中，如果 thinking block 的签名不匹配（即不是同一次 API 调用生成的），API 直接返回 400。
+   */
   const withFilteredWhitespace =
     filterWhitespaceOnlyAssistantMessages(withFilteredThinking)
   const withNonEmpty = ensureNonEmptyAssistantContent(withFilteredWhitespace)

@@ -97,7 +97,7 @@ const TASK_ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz'
 
 export function generateTaskId(type: TaskType): string {
   const prefix = getTaskIdPrefix(type)
-  const bytes = randomBytes(8)
+  const bytes = randomBytes(8) // 来自  /dev/urandom OS 熵池
   let id = prefix
   for (let i = 0; i < 8; i++) {
     id += TASK_ID_ALPHABET[bytes[i]! % TASK_ID_ALPHABET.length]

@@ -217,6 +217,7 @@ function isSilentBashCommand(command: string): boolean {
 }
 
 // Commands that should not be auto-backgrounded
+// 背景：BashTool 会 auto-background，不让它阻塞 agent
 const DISALLOWED_AUTO_BACKGROUND_COMMANDS = ['sleep' // Sleep should run in foreground unless explicitly backgrounded by user
 ];
 

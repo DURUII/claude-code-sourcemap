@@ -57,7 +57,7 @@ export function runPostCompactCleanup(querySource?: QuerySource): void {
     // auto-compact and reactive-compact did not — this centralizes the
     // clear so all compaction paths behave consistently.
     getUserContext.cache.clear?.()
-    resetGetMemoryFilesCache('compact')
+    resetGetMemoryFilesCache('compact') // memoize 短路行为：外层缓存命中后，整个函数体被跳过，内层函数根本没有执行机会
   }
   clearSystemPromptSections()
   clearClassifierApprovals()

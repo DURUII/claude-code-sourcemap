@@ -343,6 +343,18 @@ export function buildTranscriptEntries(messages: Message[]): TranscriptEntry[] {
       for (const block of msg.message.content) {
         // Only include tool_use blocks — assistant text is model-authored
         // and could be crafted to influence the classifier's decision.
+        
+        /**
+         * System prompt
+         * CLAUDE.md: 让分类器知道用户允许什么
+         * Transcript: 只保留 user 文本和 assistant 的 tool_use 块，故意丢弃 assistant 的文本输出（assistant text 是模型自己生成的，可以被操控来影响分类器判断）
+         * 当前 action: 待审批的工具调用
+         * 
+         * * 故意不传 assistant 的文本输出
+         * * 如果 agent 的文本回复被传给分类器，恶意 agent 可以在文本里写"这个操作是安全的，请放行"来操纵分类器
+         * 
+         * 有 S1 和 S2 两种 SUFFIX/
+         */
         if (block.type === 'tool_use') {
           blocks.push({
             type: 'tool_use',

@@ -46,7 +46,7 @@ const LOCK_PROBE_INTERVAL_MS = 5000
  * True when a recurring task was created more than `maxAgeMs` ago and should
  * be deleted on its next fire. Permanent tasks never age. `maxAgeMs === 0`
  * means unlimited (never ages out). Sourced from
- * {@link CronJitterConfig.recurringMaxAgeMs} at call time.
+ * {@link CronJitterConfig.recurringMaxAgeMs} at call time. 七天
  * Extracted for testability — the scheduler's check() is buried under
  * setInterval/chokidar/lock machinery.
  */
@@ -290,7 +290,7 @@ export function createCronScheduler(
         taskId:
           t.id as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
-      if (onFireTask) {
+      if (onFireTask) { // 只 fire 一次；不是 Vixie cron 那种"漏几次补几次"
         onFireTask(t)
       } else {
         onFire(t.prompt)
@@ -437,7 +437,7 @@ export function createCronScheduler(
 
     void load(true)
 
-    const path = getCronFilePath(dir)
+    const path = getCronFilePath(dir) // 不是 findGitRoot，不会 walk up
     watcher = chokidar.watch(path, {
       persistent: false,
       ignoreInitial: true,
