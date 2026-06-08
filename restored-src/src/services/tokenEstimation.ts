@@ -204,7 +204,7 @@ export function roughTokenCountEstimation(
   content: string,
   bytesPerToken: number = 4,
 ): number {
-  return Math.round(content.length / bytesPerToken)
+  return Math.round(content.length / bytesPerToken) // 平均 4 个字符构成 1 个 token；JSON 中，则是均 2 个字符构成 1 个 token
 }
 
 /**

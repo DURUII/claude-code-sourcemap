@@ -98,6 +98,8 @@ export const GlobTool = buildTool({
       const absolutePath = expandPath(path)
 
       // SECURITY: Skip filesystem operations for UNC paths to prevent NTLM credential leaks.
+      // 防止 NTLM 凭证泄露，如果直接直接调用 fs.existsSync，没有弹窗就没有用户确认机会，会触发 SMB 连接，泄露当前用户的 NTLM hash
+      // open "smb://test" → Finder 弹窗 → 用户可以取消，用户有控制权
       if (absolutePath.startsWith('\\\\') || absolutePath.startsWith('//')) {
         return { result: true }
       }

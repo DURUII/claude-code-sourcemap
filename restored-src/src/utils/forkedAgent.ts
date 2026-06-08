@@ -407,14 +407,14 @@ export function createSubagentContext(
 
     // AppState access
     getAppState,
-    setAppState: overrides?.shareSetAppState
+    setAppState: overrides?.shareSetAppState // UI 状态
       ? parentContext.setAppState
-      : () => {},
+      : () => {}, 
     // Task registration/kill must always reach the root store, even when
     // setAppState is a no-op — otherwise async agents' background bash tasks
     // are never registered and never killed (PPID=1 zombie).
-    setAppStateForTasks:
-      parentContext.setAppStateForTasks ?? parentContext.setAppState,
+    setAppStateForTasks: // session 级基础设施
+      parentContext.setAppStateForTasks ?? parentContext.setAppState, 
     // Async subagents whose setAppState is a no-op need local denial tracking
     // so the denial counter actually accumulates across retries.
     localDenialTracking: overrides?.shareSetAppState
@@ -442,7 +442,7 @@ export function createSubagentContext(
     openMessageSelector: undefined,
 
     // Fields that can be overridden or copied from parent
-    options: overrides?.options ?? parentContext.options,
+    options: overrides?.options ?? parentContext.options, // parent 的 tools 数组，整个链路里没有任何地方把它设成 []， 复用父 agent 的 prompt cache —— 那个在服务端缓存了 system prompt + tools + 先前消息的昂贵前缀
     messages: overrides?.messages ?? parentContext.messages,
     // Generate new agentId for subagents (each subagent should have its own ID)
     agentId: overrides?.agentId ?? createAgentId(),

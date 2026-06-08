@@ -495,6 +495,13 @@ export async function startSpeculation(
         }
 
         // Handle file path rewriting for overlay isolation
+        /**
+         * 写工具：把文件路径重写到临时目录。如果 overlay 里还没有这个文件的副本，先 copyFile 从真实目录复制一份过来（copy-on-write），然后在 overlay 副本上修改。
+         * 读工具：如果文件之前被推测执行写过（在 writtenPathsRef 里），就读 overlay 副本；否则读真实文件。
+         * 接受推测：第 740 行 copyOverlayToMain 把 overlay 里的修改复制回真实目录。
+         * 放弃推测：第 829 行 safeRemoveOverlay 删掉整个临时目录。
+         * 测执行遇到不该做的事（写文件但没权限、非只读 bash 命令、未知工具）会停下来，设置 boundary，等用户决定。这时推测还没"完成"，但也不是"失败"——它暂停了。
+         */
         if (isWriteTool || isSafeReadOnlyTool) {
           const pathKey =
             'notebook_path' in input
@@ -824,9 +831,12 @@ export function abortSpeculation(setAppState: SetAppState): void {
       boundary,
       { abort_reason: 'user_typed', is_pipelined: isPipelined },
     )
-
+    /**
+     * agent speculation -> 省整个 agent 执行时间；预测错 → 丢 overlay，代价 = 白花的 token
+     * acceptSpeculation -> overlay 文件搬回真实目录
+     */
     abort()
-    safeRemoveOverlay(getOverlayPath(id))
+    safeRemoveOverlay(getOverlayPath(id)) 
 
     return { ...prev, speculation: IDLE_SPECULATION_STATE }
   })

@@ -257,6 +257,8 @@ export async function autoCompactIfNeeded(
   // Circuit breaker: stop retrying after N consecutive failures.
   // Without this, sessions where context is irrecoverably over the limit
   // hammer the API with doomed compaction attempts on every turn.
+  // 熔断
+  // 一种可能的情况：用户上传了一个 200KB 的大文件，LLM 把它全读进 context。此时光这条消息就超过了整个 context window。auto-compact 触发 → fork agent → agent 本身也需要 context 来运行 summarization → 但 agent 的 context 也不够 → 返回 prompt_too_long 错误 → compact 失败
   if (
     tracking?.consecutiveFailures !== undefined &&
     tracking.consecutiveFailures >= MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES
@@ -341,6 +343,8 @@ export async function autoCompactIfNeeded(
     const prevFailures = tracking?.consecutiveFailures ?? 0
     const nextFailures = prevFailures + 1
     if (nextFailures >= MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES) {
+      // 经验阈值，连续 3 次 compact 都失败，说明不是偶发网络问题或瞬时边界条件
+      // 类比：电流过载 → 保险丝断 → 切断电路 → 保护设备
       logForDebugging(
         `autocompact: circuit breaker tripped after ${nextFailures} consecutive failures — skipping future attempts this session`,
         { level: 'warn' },

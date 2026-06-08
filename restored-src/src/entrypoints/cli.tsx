@@ -288,7 +288,7 @@ async function main(): Promise<void> {
   const {
     startCapturingEarlyInput
   } = await import('../utils/earlyInput.js');
-  startCapturingEarlyInput();
+  startCapturingEarlyInput(); // 在 REPL 还没初始化之前，先把用户敲的字存起来，等 REPL 准备好了再吐出来！graceful shutdown 依赖的整条链路都不存在，所以只能 process.exit(130) 硬退
   profileCheckpoint('cli_before_main_import');
   const {
     main: cliMain
