@@ -9,6 +9,10 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
+      "@ant/claude-for-chrome-mcp": [
+        "node_modules/@ant/claude-for-chrome-mcp/src/index.ts"
+      ],
+      "color-diff-napi": ["src/native-ts/color-diff/index.ts"],
       "src/*": ["src/*"]
     },
     "allowSyntheticDefaultImports": true,

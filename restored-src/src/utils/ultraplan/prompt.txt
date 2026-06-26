@@ -1,0 +1,9 @@
+<system-reminder>
+Restoration placeholder: the original Ultraplan prompt resource was not
+recovered in this source tree.
+
+Do not attempt to emulate the original remote planning workflow from this
+placeholder. If the Ultraplan command is invoked, explain that the restored
+runtime can load the command module for CLI startup, but the original
+Ultraplan prompt content is unavailable.
+</system-reminder>

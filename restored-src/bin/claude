@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Restoration shim: preserve the user's invocation directory while executing
+# the restored source from the repository root so relative runtime files remain
+# discoverable.
+export CALLER_DIR="${CALLER_DIR:-$(pwd -W 2>/dev/null || pwd)}"
+
+# Restoration shim: use the repo-local Claude config root by default so this
+# source-restored runtime reads .claude/settings*.json without implicitly
+# loading unrelated global plugins/hooks from ~/.claude. Set CLAUDE_CONFIG_DIR
+# explicitly when you want to debug against a different config root.
+export CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$ROOT_DIR/.claude}"
+
+cd "$ROOT_DIR"
+
+exec bun ./src/entrypoints/cli.tsx "$@"

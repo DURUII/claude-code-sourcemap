@@ -552,6 +552,8 @@ ${CYBER_RISK_INSTRUCTION}`,
     // https://docs.growthbook.io/using
     // https://docs.growthbook.io/assets/files/open-guide-to-ab-testing.v1.0-228e9312b957a9716766cd8887b18a11.pdf
     // https://www.growthbook.io/guides
+    // https://exp-platform.com
+    // https://www.optimizely.com/field-notes/articles
     systemPromptSection('ant_model_override', () =>
       getAntModelOverrideSection(),
     ),

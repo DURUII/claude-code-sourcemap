@@ -1,0 +1,4 @@
+# Restoration shim: Bun preloads this file before evaluating the restored
+# source entrypoint. The original package injected build constants at bundle
+# time; local source execution needs a small explicit replacement.
+preload = ["./preload.ts"]
