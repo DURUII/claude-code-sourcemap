@@ -442,7 +442,7 @@ export type Tool<
     isRead: boolean
     isList?: boolean
   }
-  isOpenWorld?(input: z.infer<Input>): boolean
+  isOpenWorld?(input: z.infer<Input>): boolean // MCP 不可预测的外部域
   requiresUserInteraction?(): boolean
   isMcp?: boolean
   isLsp?: boolean

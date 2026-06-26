@@ -41,16 +41,16 @@ export function DANGEROUS_uncachedSystemPromptSection(
  * Resolve all system prompt sections, returning prompt strings.
  */
 export async function resolveSystemPromptSections(
-  sections: SystemPromptSection[],
+  sections: SystemPromptSection[], // array of SystemPromptSection
 ): Promise<(string | null)[]> {
-  const cache = getSystemPromptSectionCache()
+  const cache = getSystemPromptSectionCache() // 这里不是服务端 prompt cache，就是一个进程内 Map；/clear、/compact 或显式调用 clearSystemPromptSections() 会清除
 
   return Promise.all(
     sections.map(async s => {
       if (!s.cacheBreak && cache.has(s.name)) {
-        return cache.get(s.name) ?? null
+        return cache.get(s.name) ?? null // 复用缓存
       }
-      const value = await s.compute()
+      const value = await s.compute() // 相较字符串拼接，I/O 扫描计算较慢
       setSystemPromptSectionCacheEntry(s.name, value)
       return value
     }),

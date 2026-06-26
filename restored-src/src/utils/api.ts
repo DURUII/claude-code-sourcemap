@@ -458,6 +458,7 @@ export function prependUserContext(
     return messages
   }
 
+  // meta user message
   return [
     createUserMessage({
       content: `<system-reminder>\nAs you answer the user's questions, you can use the following context:\n${Object.entries(

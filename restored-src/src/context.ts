@@ -161,6 +161,10 @@ export const getSystemContext = memoize(
  * 读取/拼接 CLAUDE.md 相关记忆内容（可被环境变量或 bare 模式禁用）
  * 写入缓存给其他模块（比如 auto/yolo 权限/风险分类）复用：“智能审批员”，restored-src/src/utils/permissions/yoloClassifier.ts
  * 额外注入当前日期（ Today's date is ... ）
+ * 
+ * getSystemPrompt() getSystemContext()
+ * getUserContext() -> <system-reminder>
+ * createAttachmentMessage()
  */
 export const getUserContext = memoize(
   async (): Promise<{

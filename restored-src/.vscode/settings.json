@@ -13,4 +13,6 @@
     "javascriptreact": "cd $dir && bun run $fileName"
   },
   "code-runner.defaultLanguage": "typescript",
-  "code-runner.runInTerminal": true
+  "code-runner.runInTerminal": true,
+  "spellright.documentTypes": ["plaintext"]
+}

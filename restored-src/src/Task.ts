@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 import type { AppState } from './state/AppState.js'
 import type { AgentId } from './types/ids.js'
-import { getTaskOutputPath } from './utils/task/diskOutput.js'
+import { getTaskOutputPath } from './utils/task/diskOutput.js' // e.g. `/tmp/claude-{uid}/{sanitized-cwd}/<session-id>/tasks/<task-id>.output`
 
 export type TaskType =
   | 'local_bash'

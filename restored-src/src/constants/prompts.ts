@@ -23,6 +23,7 @@ import {
   getCanonicalName,
   getMarketingNameForModel,
 } from '../utils/model/model.js' // 提取模型系列名, knowledge cut off matters
+import { getAntModelOverrideConfig } from '../utils/model/antModels.js'
 import { getSkillToolCommands } from 'src/commands.js' // 从 cwd 目录下收集所有可用的 skill/command, 把对应的使用说明注入系统提示词
 import { SKILL_TOOL_NAME } from '../tools/SkillTool/constants.js'
 import { getOutputStyleConfig } from './outputStyles.js' // default, Explanatory, Learning ...
@@ -539,20 +540,30 @@ ${CYBER_RISK_INSTRUCTION}`,
     ].filter(s => s !== null)
   }
 
+  // an array of SystemPromptSection
   const dynamicSections = [
+    // 1: session guidance 和工具池对齐，7/12 bit 开关
     systemPromptSection('session_guidance', () =>
       getSessionSpecificGuidanceSection(enabledTools, skillToolCommands),
     ),
+    // 2*: auto-memory or daily-log or team memory, 规则说明, 目录在哪、怎么保存、怎么搜索
     systemPromptSection('memory', () => loadMemoryPrompt()),
+    // 3: 由 GrowthBook 动态配置
+    // https://docs.growthbook.io/using
+    // https://docs.growthbook.io/assets/files/open-guide-to-ab-testing.v1.0-228e9312b957a9716766cd8887b18a11.pdf
+    // https://www.growthbook.io/guides
     systemPromptSection('ant_model_override', () =>
       getAntModelOverrideSection(),
     ),
+    // 4*：模型身份映射 & cutoff，环境，（额外）工作目录，git，平台/OS/shell；可用形态 & fast
     systemPromptSection('env_info_simple', () =>
       computeSimpleEnvInfo(model, additionalWorkingDirectories),
     ),
+    // 5: ~/.claude/settings.local.json, userSettings -> projectSettings -> localSettings -> policySettings
     systemPromptSection('language', () =>
       getLanguageSection(settings.language),
     ),
+    // 6: Proactive/Explanatory/Learning
     systemPromptSection('output_style', () =>
       getOutputStyleSection(outputStyleConfig),
     ),
@@ -566,6 +577,7 @@ ${CYBER_RISK_INSTRUCTION}`,
     // section 本身会缓存，如果在外层切 section 变体
     // 会遇到“中途开关翻转但缓存没同步”的风险；放 compute 里更稳。
     // 缓存机制见 systemPromptSections.ts:L43-L56
+    // 7*: 
     DANGEROUS_uncachedSystemPromptSection(
       'mcp_instructions',
       () =>
@@ -574,12 +586,16 @@ ${CYBER_RISK_INSTRUCTION}`,
           : getMcpInstructionsSection(mcpClients),
       'MCP servers connect/disconnect between turns',
     ),
+    // 8: feature gate tengu_scratch instead of `/tmp`
     systemPromptSection('scratchpad', () => getScratchpadInstructions()),
+    // 9: 旧的 tool/function results 可能会被自动从上下文里清掉
     systemPromptSection('frc', () => getFunctionResultClearingSection(model)),
+    // 10*: 主动保存关键信息
     systemPromptSection(
       'summarize_tool_results',
       () => SUMMARIZE_TOOL_RESULTS_SECTION,
     ),
+    // 11: 内测
     // Numeric length anchors — research shows ~1.2% output token reduction vs
     // qualitative "be concise". Ant-only to measure quality impact first.
     // 实验里约有 1.2% token 降幅，先在 ant-only 观察质量副作用
@@ -592,6 +608,7 @@ ${CYBER_RISK_INSTRUCTION}`,
         ),
       ]
       : []),
+    // 12: 硬性最低目标
     ...(feature('TOKEN_BUDGET')
       ? [
         // Cached unconditionally — the "When the user specifies..." phrasing
@@ -613,6 +630,7 @@ ${CYBER_RISK_INSTRUCTION}`,
         ),
       ]
       : []),
+    // 13: 用户发送非阻塞短状态更新，汇报进度、状态或阻塞点
     ...(feature('KAIROS') || feature('KAIROS_BRIEF')
       ? [systemPromptSection('brief', () => getBriefSection())]
       : []),
@@ -634,8 +652,10 @@ ${CYBER_RISK_INSTRUCTION}`,
     getSimpleToneAndStyleSection(),
     getOutputEfficiencySection(),
     // === BOUNDARY MARKER - DO NOT MOVE OR REMOVE ===
+    // 编译期分隔符
     ...(shouldUseGlobalCacheScope() ? [SYSTEM_PROMPT_DYNAMIC_BOUNDARY] : []),
     // --- Dynamic content (registry-managed) ---
+    // 注册机制管理，而不是直接写死在数组里
     ...resolvedDynamicSections,
   ].filter(s => s !== null)
 }
