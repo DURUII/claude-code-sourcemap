@@ -1,0 +1,241 @@
+:root {
+  --vscode-foreground: #e8e3d8;
+  --vscode-descriptionForeground: #a8a197;
+  --vscode-sideBar-background: #181713;
+  --vscode-sideBarActivityBarTop-border: #2f2b25;
+  --vscode-editor-background: #211f1a;
+  --vscode-input-foreground: #f3eee5;
+  --vscode-input-background: #2a2721;
+  --vscode-inlineChatInput-border: #464037;
+  --vscode-inputOption-activeBorder: #d97757;
+  --vscode-input-placeholderForeground: #8c857b;
+  --vscode-menu-background: #26231e;
+  --vscode-menu-border: #3b352d;
+  --vscode-menu-foreground: #f0eadf;
+  --vscode-menu-selectionBackground: #3a332b;
+  --vscode-menu-selectionForeground: #ffffff;
+  --vscode-list-hoverBackground: #2e2a24;
+  --vscode-list-activeSelectionBackground: #46352d;
+  --vscode-list-activeSelectionForeground: #ffffff;
+  --vscode-badge-foreground: #fff6ef;
+  --vscode-badge-background: #7f4a38;
+  --vscode-progressBar-background: #d97757;
+  --vscode-widget-border: #37322b;
+  --vscode-toolbar-hoverBackground: #353029;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-background: #c6613f;
+  --vscode-button-hoverBackground: #d97757;
+  --vscode-disabledForeground: #6f685f;
+  --vscode-errorForeground: #ff8d7d;
+  --vscode-gitDecoration-addedResourceForeground: #8fd18f;
+  --vscode-editorMarkerNavigationInfo-headerBackground: #26384b;
+  --vscode-charts-blue: #6aa6f8;
+  --vscode-charts-green: #7fc97f;
+  --vscode-charts-orange: #d97757;
+  --vscode-charts-yellow: #e0b84a;
+  --vscode-charts-purple: #b58cff;
+  --vscode-charts-red: #ff7f7f;
+  --vscode-terminal-ansiCyan: #6ed6d6;
+  --vscode-charts-foreground: #d7d0c4;
+  --vscode-chat-font-size: 13px;
+  --vscode-chat-font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --vscode-editor-font-family: "SF Mono", Menlo, Consolas, monospace;
+  --vscode-editor-font-size: 12px;
+}
+
+html,
+body {
+  background: var(--vscode-sideBar-background);
+}
+
+#claude-error {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10000;
+  color: var(--vscode-errorForeground);
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+.claude-api-key-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.claude-api-key-dialog {
+  width: min(420px, 100%);
+  color: var(--vscode-foreground);
+  background: var(--vscode-menu-background);
+  border: 1px solid var(--vscode-widget-border);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  font-family: var(--vscode-chat-font-family);
+}
+
+.claude-api-key-title {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  border-bottom: 1px solid var(--vscode-widget-border);
+}
+
+.claude-api-key-form {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.claude-api-key-label {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.claude-api-key-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 8px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-inlineChatInput-border);
+  border-radius: 2px;
+  font: 13px/1.4 var(--vscode-editor-font-family);
+  outline: none;
+}
+
+.claude-api-key-input:focus {
+  border-color: var(--vscode-inputOption-activeBorder);
+}
+
+.claude-api-key-input::placeholder {
+  color: var(--vscode-input-placeholderForeground);
+}
+
+.claude-api-key-hint {
+  min-height: 16px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--vscode-descriptionForeground);
+}
+
+.claude-api-key-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.claude-api-key-button {
+  min-width: 76px;
+  min-height: 28px;
+  padding: 4px 10px;
+  color: var(--vscode-button-foreground);
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font: 12px/1.35 var(--vscode-chat-font-family);
+  cursor: pointer;
+}
+
+.claude-api-key-button-primary {
+  background: var(--vscode-button-background);
+}
+
+.claude-api-key-button-primary:hover,
+.claude-api-key-button-primary:focus {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.claude-api-key-button-secondary {
+  color: var(--vscode-menu-foreground);
+  background: var(--vscode-input-background);
+  border-color: var(--vscode-inlineChatInput-border);
+}
+
+.claude-api-key-button-secondary:hover,
+.claude-api-key-button-secondary:focus {
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
+.claude-notification {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2147483646;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  width: min(420px, calc(100vw - 28px));
+  padding: 10px 10px 10px 12px;
+  color: var(--vscode-menu-foreground);
+  background: var(--vscode-menu-background);
+  border: 1px solid var(--vscode-widget-border);
+  border-left-width: 3px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38);
+  font-family: var(--vscode-chat-font-family);
+}
+
+.claude-notification-info {
+  border-left-color: var(--vscode-charts-blue);
+}
+
+.claude-notification-warning {
+  border-left-color: var(--vscode-charts-yellow);
+}
+
+.claude-notification-error {
+  border-left-color: var(--vscode-errorForeground);
+}
+
+.claude-notification-message {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.claude-notification-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.claude-notification-button,
+.claude-notification-close {
+  color: var(--vscode-menu-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-inlineChatInput-border);
+  border-radius: 2px;
+  font: 12px/1.35 var(--vscode-chat-font-family);
+  cursor: pointer;
+}
+
+.claude-notification-button {
+  min-height: 26px;
+  padding: 3px 10px;
+}
+
+.claude-notification-close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+}
+
+.claude-notification-button:hover,
+.claude-notification-button:focus,
+.claude-notification-close:hover,
+.claude-notification-close:focus {
+  background: var(--vscode-toolbar-hoverBackground);
+}

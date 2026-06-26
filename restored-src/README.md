@@ -40,6 +40,55 @@ npm run claude -- --version
 CLAUDE_CONFIG_DIR=~/.claude ./bin/claude
 ```
 
+## Telemetry / GrowthBook 配置
+
+本地配置中 `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` 会阻止 GrowthBook、内部 analytics、内部 metrics 等非必要网络流量。
+
+如果要做可观测性实验，可新建配置目录，或在启动命令里显式传入环境变量。
+
+例如，临时测试 OTLP：
+
+```bash
+CLAUDE_CODE_ENABLE_TELEMETRY=1 \
+OTEL_LOGS_EXPORTER=otlp \
+OTEL_METRICS_EXPORTER=otlp \
+OTEL_TRACES_EXPORTER=otlp \
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318 \
+./bin/claude
+```
+
+也可以将长期配置可以放在自定义 `CLAUDE_CONFIG_DIR/settings.local.json` 的 `env` 字段中，例如：
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_TRACES_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otel.example.com",
+    "OTEL_EXPORTER_OTLP_HEADERS": "Authorization=Bearer REPLACE_ME"
+  }
+}
+```
+
+GrowthBook 当前代码默认使用 Anthropic 的 GrowthBook host 和 client key。
+
+`USER_TYPE=ant` 会打开大量内部调试、prompt、bridge、analytics 分支。
+
+若要接自己的 GrowthBook，建议显式补一个小 patch，让外部运行也能读取类似下面的占位符：
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_GB_BASE_URL": "https://growthbook.example.com",
+    "CLAUDE_CODE_GB_CLIENT_KEY": "sdk-REPLACE_ME"
+  }
+}
+```
+
 ## 目录结构
 
 ```text
