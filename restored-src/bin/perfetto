@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TRACE_DIR="${CLAUDE_CONFIG_DIR:-$ROOT_DIR/.claude}/traces"
+TOOLS_DIR="$ROOT_DIR/.claude/tools"
+OPEN_TRACE="$TOOLS_DIR/open_trace_in_ui"
+OPEN_TRACE_URL="https://raw.githubusercontent.com/google/perfetto/main/tools/open_trace_in_ui"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  bin/perfetto-trace [trace-file]
+  bin/perfetto-trace --latest
+  bin/perfetto-trace --list
+
+Options:
+  --latest           Open the newest trace file. This is the default.
+  --list             Print trace files newest first.
+  --no-open-browser  Print the Perfetto URL without opening a browser.
+
+Trace files default to:
+  .claude/traces/trace-<session-id>.json
+USAGE
+}
+
+ensure_open_trace() {
+  if [ -x "$OPEN_TRACE" ]; then
+    return
+  fi
+  mkdir -p "$TOOLS_DIR"
+  curl -fsSL "$OPEN_TRACE_URL" -o "$OPEN_TRACE"
+  chmod +x "$OPEN_TRACE"
+}
+
+list_traces() {
+  if [ ! -d "$TRACE_DIR" ]; then
+    return
+  fi
+  find "$TRACE_DIR" -maxdepth 1 -type f -name 'trace-*.json' -print0 |
+    xargs -0 ls -t 2>/dev/null || true
+}
+
+latest_trace() {
+  list_traces | head -1
+}
+
+trace=""
+open_browser=1
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    --latest)
+      trace=""
+      ;;
+    --list)
+      list_traces
+      exit 0
+      ;;
+    --no-open-browser)
+      open_browser=0
+      ;;
+    -*)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      trace="$1"
+      ;;
+  esac
+  shift
+done
+
+if [ -z "$trace" ]; then
+  trace="$(latest_trace)"
+fi
+
+if [ -z "$trace" ]; then
+  echo "No Perfetto traces found in $TRACE_DIR" >&2
+  echo "Run with CLAUDE_RESTORED_TELEMETRY=1 and CLAUDE_CODE_PERFETTO_TRACE=1 first." >&2
+  exit 1
+fi
+
+if [ ! -f "$trace" ]; then
+  echo "Trace file not found: $trace" >&2
+  exit 1
+fi
+
+ensure_open_trace
+
+if [ "$open_browser" -eq 1 ]; then
+  exec "$OPEN_TRACE" "$trace"
+else
+  exec "$OPEN_TRACE" --no-open-browser "$trace"
+fi

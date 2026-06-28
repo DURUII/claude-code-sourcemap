@@ -14,6 +14,64 @@ export CALLER_DIR="${CALLER_DIR:-$(pwd -W 2>/dev/null || pwd)}"
 # explicitly when you want to debug against a different config root.
 export CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$ROOT_DIR/.claude}"
 
+# Optional machine-local env. This file is ignored and is the right place for
+# private hostnames, SDK keys, passwords, and homelab/cloud endpoints.
+if [ -f "$ROOT_DIR/.claude/telemetry.env" ]; then
+  set -a
+  # shellcheck source=/dev/null
+  . "$ROOT_DIR/.claude/telemetry.env"
+  set +a
+fi
+
+# Restoration telemetry is opt-in for public/source-study use. Set
+# CLAUDE_RESTORED_TELEMETRY=1 to point this runtime at a local or self-hosted
+# OTLP/GrowthBook stack without repeating all env vars on every invocation.
+if [ "${CLAUDE_RESTORED_TELEMETRY:-0}" = "1" ]; then
+  export CLAUDE_RESTORED_TELEMETRY=1
+  export CLAUDE_CODE_ENABLE_TELEMETRY="${CLAUDE_CODE_ENABLE_TELEMETRY:-1}"
+  export OTEL_LOGS_EXPORTER="${OTEL_LOGS_EXPORTER:-otlp}"
+  export OTEL_METRICS_EXPORTER="${OTEL_METRICS_EXPORTER:-otlp}"
+  export OTEL_TRACES_EXPORTER="${OTEL_TRACES_EXPORTER:-otlp}"
+  export OTEL_EXPORTER_OTLP_PROTOCOL="${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}"
+  export OTEL_EXPORTER_OTLP_ENDPOINT="${OTEL_EXPORTER_OTLP_ENDPOINT:-http://127.0.0.1:4318}"
+  export NO_PROXY="${NO_PROXY:+$NO_PROXY,}localhost,127.0.0.1"
+  export no_proxy="${no_proxy:+$no_proxy,}localhost,127.0.0.1"
+  export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA="${CLAUDE_CODE_ENHANCED_TELEMETRY_BETA:-1}"
+  export CLAUDE_CODE_OTEL_SHUTDOWN_TIMEOUT_MS="${CLAUDE_CODE_OTEL_SHUTDOWN_TIMEOUT_MS:-5000}"
+  export CLAUDE_CODE_GB_BASE_URL="${CLAUDE_CODE_GB_BASE_URL:-http://127.0.0.1:3100}"
+  export CLAUDE_CODE_PERFETTO_TRACE="${CLAUDE_CODE_PERFETTO_TRACE:-1}"
+  export CLAUDE_CODE_PERFETTO_WRITE_INTERVAL_S="${CLAUDE_CODE_PERFETTO_WRITE_INTERVAL_S:-5}"
+
+  # The repo-local .claude/settings.local.json currently sets this for quiet
+  # offline study runs. Telemetry experiments need it cleared after settings are
+  # applied too; src/utils/managedEnv.ts honors CLAUDE_RESTORED_TELEMETRY for
+  # that later phase.
+  unset CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+
+  if [ -t 2 ] && [ "${CLAUDE_RESTORED_TELEMETRY_BANNER:-1}" != "0" ]; then
+    {
+      echo "[claude telemetry] OTLP: ${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      echo "[claude telemetry] Grafana: ${CLAUDE_RESTORED_GRAFANA_URL:-http://127.0.0.1:3001}"
+      echo "[claude telemetry] GrowthBook: ${CLAUDE_RESTORED_GROWTHBOOK_URL:-http://127.0.0.1:3000}"
+      if [ -z "${CLAUDE_CODE_GB_CLIENT_KEY:-}" ]; then
+        echo "[claude telemetry] GrowthBook SDK key: unset; set CLAUDE_CODE_GB_CLIENT_KEY after creating an SDK connection"
+      fi
+      echo "[claude telemetry] Prometheus: ${CLAUDE_RESTORED_PROMETHEUS_URL:-http://127.0.0.1:9090}"
+      echo "[claude telemetry] Tempo: ${CLAUDE_RESTORED_TEMPO_URL:-http://127.0.0.1:3200}"
+      echo "[claude telemetry] Perfetto: ${CLAUDE_CODE_PERFETTO_TRACE}"
+    } >&2
+  fi
+fi
+
+# Restoration shim: this runtime is a sourcemap study / experimentation
+# environment, not a production CLI. Default to skipping tool permission
+# prompts so prompts, tests, and scripts can run uninterrupted. Set
+# CLAUDE_RESTORED_SKIP_PERMS=0 (or pass --permission-mode explicitly) to
+# restore the standard prompt-per-tool behavior.
+if [ "${CLAUDE_RESTORED_SKIP_PERMS:-1}" != "0" ]; then
+  set -- --dangerously-skip-permissions "$@"
+fi
+
 cd "$ROOT_DIR"
 
 exec bun ./src/entrypoints/cli.tsx "$@"

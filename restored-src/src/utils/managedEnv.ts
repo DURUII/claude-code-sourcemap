@@ -90,6 +90,11 @@ function filterSettingsEnv(
   )
 }
 
+function applyRestoredTelemetryEnvOverrides(): void {
+  if (process.env.CLAUDE_RESTORED_TELEMETRY !== '1') return
+  delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+}
+
 /**
  * Trusted setting sources whose env vars can be applied before the trust dialog.
  *
@@ -175,6 +180,7 @@ export function applySafeConfigEnvironmentVariables(): void {
       process.env[key] = value
     }
   }
+  applyRestoredTelemetryEnvOverrides()
 }
 
 /**
@@ -188,6 +194,7 @@ export function applyConfigEnvironmentVariables(): void {
   Object.assign(process.env, filterSettingsEnv(getGlobalConfig().env))
 
   Object.assign(process.env, filterSettingsEnv(getSettings_DEPRECATED()?.env))
+  applyRestoredTelemetryEnvOverrides()
 
   // Clear caches so agents are rebuilt with the new env vars
   clearCACertsCache()

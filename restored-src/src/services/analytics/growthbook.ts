@@ -501,9 +501,10 @@ const getGrowthBookClient = memoize(
       )
     }
     const baseUrl =
-      process.env.USER_TYPE === 'ant'
-        ? process.env.CLAUDE_CODE_GB_BASE_URL || 'https://api.anthropic.com/'
-        : 'https://api.anthropic.com/'
+      process.env.CLAUDE_CODE_GB_BASE_URL ||
+      (process.env.USER_TYPE === 'ant'
+        ? 'https://api.anthropic.com/'
+        : 'https://api.anthropic.com/')
 
     // Skip auth if trust hasn't been established yet
     // This prevents executing apiKeyHelper commands before the trust dialog
@@ -518,7 +519,10 @@ const getGrowthBookClient = memoize(
     const authHeaders = hasTrust
       ? getAuthHeaders()
       : { headers: {}, error: 'trust not established' }
-    const hasAuth = !authHeaders.error
+    const allowUnauthenticatedSelfHostedGrowthBook = Boolean(
+      process.env.CLAUDE_CODE_GB_BASE_URL,
+    )
+    const hasAuth = !authHeaders.error || allowUnauthenticatedSelfHostedGrowthBook
     clientCreatedWithAuth = hasAuth
 
     // Capture in local variable so the init callback operates on THIS client,
@@ -762,16 +766,32 @@ export function getFeatureValue_CACHED_MAY_BE_STALE<T>(
   // skips the config JSON parse and is what onGrowthBookRefresh subscribers
   // depend on to read fresh values the instant they're notified.
   if (remoteEvalFeatureValues.has(feature)) {
-    return remoteEvalFeatureValues.get(feature) as T
+    return coerceFeatureValue(remoteEvalFeatureValues.get(feature), defaultValue)
   }
 
   // Fall back to disk cache (survives across process restarts)
   try {
     const cached = getGlobalConfig().cachedGrowthBookFeatures?.[feature]
-    return cached !== undefined ? (cached as T) : defaultValue
+    return coerceFeatureValue(cached, defaultValue)
   } catch {
     return defaultValue
   }
+}
+
+function coerceFeatureValue<T>(value: unknown, defaultValue: T): T {
+  if (value === undefined) {
+    return defaultValue
+  }
+
+  if (
+    value === null &&
+    defaultValue !== null &&
+    typeof defaultValue === 'object'
+  ) {
+    return defaultValue
+  }
+
+  return value as T
 }
 
 /**

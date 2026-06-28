@@ -1,0 +1,105 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    restart: unless-stopped
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "9464:9464"   # Prometheus scrape endpoint for converted OTEL metrics
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+      - loki
+      - tempo
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+      - "--web.enable-otlp-receiver"
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - otel-collector
+
+  loki:
+    image: grafana/loki:latest
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    restart: unless-stopped
+    expose:
+      - "3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml"]
+    restart: unless-stopped
+    ports:
+      - "3200:3200"   # Tempo HTTP query/status
+    expose:
+      - "4317"
+      - "4318"
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-growthbook}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-growthbook}
+    volumes:
+      - mongo-data:/data/db
+
+  growthbook:
+    image: growthbook/growthbook:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # GrowthBook app
+      - "3100:3100"   # GrowthBook API
+    environment:
+      MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-growthbook}:${MONGO_INITDB_ROOT_PASSWORD:-growthbook}@mongo:27017/growthbook?authSource=admin
+      APP_ORIGIN: ${GROWTHBOOK_APP_ORIGIN:-http://localhost:3000}
+      API_HOST: ${GROWTHBOOK_API_HOST:-http://localhost:3100}
+      JWT_SECRET: ${GROWTHBOOK_JWT_SECRET:-dev-jwt-secret-change-me}
+      ENCRYPTION_KEY: ${GROWTHBOOK_ENCRYPTION_KEY:-dev-encryption-key-change-me}
+    depends_on:
+      - mongo
+    volumes:
+      - growthbook-uploads:/usr/local/src/app/packages/back-end/uploads
+
+volumes:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  grafana-data:
+  mongo-data:
+  growthbook-uploads:

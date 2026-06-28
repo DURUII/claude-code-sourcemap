@@ -256,8 +256,13 @@ export function initializePerfettoTracing(): void {
     `[Perfetto] initializePerfettoTracing called, env value: ${envValue}`,
   )
 
-  // Wrap in feature() for dead code elimination - entire block removed from external builds
-  if (feature('PERFETTO_TRACING')) {
+  // Wrap in feature() for dead code elimination in production bundles, but let
+  // the restored source runtime opt in for study/debugging.
+  if (
+    feature('PERFETTO_TRACING') ||
+    process.env.CLAUDE_RESTORED_TELEMETRY === '1' ||
+    process.env.CLAUDE_CODE_ENABLE_PERFETTO_TRACING === '1'
+  ) {
     if (!envValue || isEnvDefinedFalsy(envValue)) {
       logForDebugging(
         '[Perfetto] Tracing disabled (env var not set or disabled)',
