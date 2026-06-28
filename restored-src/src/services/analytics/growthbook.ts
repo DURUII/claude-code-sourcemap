@@ -501,9 +501,10 @@ const getGrowthBookClient = memoize(
       )
     }
     const baseUrl =
-      process.env.USER_TYPE === 'ant'
-        ? process.env.CLAUDE_CODE_GB_BASE_URL || 'https://api.anthropic.com/'
-        : 'https://api.anthropic.com/'
+      process.env.CLAUDE_CODE_GB_BASE_URL ||
+      (process.env.USER_TYPE === 'ant'
+        ? 'https://api.anthropic.com/'
+        : 'https://api.anthropic.com/')
 
     // Skip auth if trust hasn't been established yet
     // This prevents executing apiKeyHelper commands before the trust dialog
@@ -518,7 +519,10 @@ const getGrowthBookClient = memoize(
     const authHeaders = hasTrust
       ? getAuthHeaders()
       : { headers: {}, error: 'trust not established' }
-    const hasAuth = !authHeaders.error
+    const allowUnauthenticatedSelfHostedGrowthBook = Boolean(
+      process.env.CLAUDE_CODE_GB_BASE_URL,
+    )
+    const hasAuth = !authHeaders.error || allowUnauthenticatedSelfHostedGrowthBook
     clientCreatedWithAuth = hasAuth
 
     // Capture in local variable so the init callback operates on THIS client,

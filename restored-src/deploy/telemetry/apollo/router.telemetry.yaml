@@ -1,0 +1,21 @@
+# Template only. Claude Code does not currently run through Apollo Router.
+# Use this if a future GraphQL facade/router is added and should report to the
+# same local or self-hosted OpenTelemetry Collector.
+
+telemetry:
+  exporters:
+    metrics:
+      common:
+        service_name: apollo-router
+      otlp:
+        enabled: true
+        endpoint: http://otel-collector:4317
+        protocol: grpc
+
+    tracing:
+      common:
+        service_name: apollo-router
+      otlp:
+        enabled: true
+        endpoint: http://otel-collector:4317
+        protocol: grpc
