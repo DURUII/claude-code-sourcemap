@@ -64,14 +64,14 @@ export type ProcessUserInputContext = ToolUseContext & LocalJSXCommandContext
 export type ProcessUserInputBaseResult = {
   messages: (
     | UserMessage
-    | AssistantMessage
-    | AttachmentMessage
-    | SystemMessage
+    | AssistantMessage // slash 子 agent
+    | AttachmentMessage // 附件消息，@file, IDE, changed files
+    | SystemMessage // e.g. createSystemMessage(`Args from unknown skill: ${parsedArgs}`, 'warning')
     | ProgressMessage
-  )[]
-  shouldQuery: boolean
+  )[] // 回答：1. 用户输入被转换成了哪些内部 messages
+  shouldQuery: boolean // 回答：2. 要不要调用 llm, e.g. /config
   allowedTools?: string[]
-  model?: string
+  model?: string // e.g. 某些 slash command 或配置可能会改变本轮使用的模型
   effort?: EffortValue
   // Output text for non-interactive mode (e.g., forked commands)
   // When set, this is used as the result in -p mode instead of empty string
@@ -83,22 +83,22 @@ export type ProcessUserInputBaseResult = {
 }
 
 export async function processUserInput({
-  input,
-  preExpansionInput,
-  mode,
-  setToolJSX,
-  context,
-  pastedContents,
-  ideSelection,
+  input, // content block 数组
+  preExpansionInput, // 区分展开前和展开后
+  mode, // prompt/bash
+  setToolJSX, // 渲染函数
+  context, // 工具使用上下文 + 本地 JSX 命令上下文
+  pastedContents, // 可能是文本，也可能是图片
+  ideSelection, // IDE 环境附带的信息
   messages,
   setUserInputOnProcessing,
   uuid,
   isAlreadyProcessing,
   querySource,
   canUseTool,
-  skipSlashCommands,
+  skipSlashCommands, // 防止 bridge/CCR 触发本地 slash commands 或 skills
   bridgeOrigin,
-  isMeta,
+  isMeta, // 用户看不见但模型能看见的消息
   skipAttachments,
 }: {
   input: string | Array<ContentBlockParam>
@@ -143,11 +143,11 @@ export async function processUserInput({
   // Skip for isMeta (system-generated prompts like scheduled tasks) — those
   // should run invisibly.
   if (mode === 'prompt' && inputString !== null && !isMeta) {
-    setUserInputOnProcessing?.(inputString)
+    setUserInputOnProcessing?.(inputString) // 显示在 UI 上
   }
 
   /**
-   * 本地性能 debug，CLAUDE_CODE_PROFILE_QUERY=1 时激活，perf.mark 和 memorySnapshots
+   * 性能埋点 debug，CLAUDE_CODE_PROFILE_QUERY=1 时激活，perf.mark 和 memorySnapshots
    * Context loading
    * Microcompact
    * Query setup
@@ -183,10 +183,16 @@ export async function processUserInput({
   queryCheckpoint('query_process_user_input_base_end')
 
   if (!result.shouldQuery) {
-    return result
+    return result // hooks 只在 shouldQuery=true 的情况下运行
   }
 
   // Execute UserPromptSubmit hooks and handle blocking
+  /**
+   * 进度通知
+   * 硬阻塞
+   * 软停止
+   * 追加上下文
+   */
   queryCheckpoint('query_hooks_start')
   const inputMessage = getContentText(input) || ''
 
@@ -240,7 +246,7 @@ export async function processUserInput({
       hookResult.additionalContexts.length > 0
     ) {
       result.messages.push(
-        createAttachmentMessage({
+        createAttachmentMessage({ // 提供额外上下文
           type: 'hook_additional_context',
           content: hookResult.additionalContexts.map(applyTruncation),
           hookName: 'UserPromptSubmit',
@@ -262,7 +268,7 @@ export async function processUserInput({
             ...hookResult.message,
             attachment: {
               ...hookResult.message.attachment,
-              content: applyTruncation(hookResult.message.attachment.content),
+              content: applyTruncation(hookResult.message.attachment.content), // 截断
             },
           })
           break
@@ -293,7 +299,7 @@ async function processUserInputBase(
   input: string | Array<ContentBlockParam>,
   mode: PromptInputMode,
   setToolJSX: SetToolJSXFn,
-  context: ProcessUserInputContext,
+  context: ProcessUserInputContext, // 拿 appState、isNonInteractiveSession、requestPrompt 等
   pastedContents?: Record<number, PastedContent>,
   ideSelection?: IDESelection,
   messages?: Message[],
@@ -329,9 +335,11 @@ async function processUserInputBase(
     const processedBlocks: ContentBlockParam[] = []
     for (const block of input) {
       if (block.type === 'image') {
+        // 缩小或降采样
         const resized = await maybeResizeAndDownsampleImageBlock(block)
         // Collect image metadata for isMeta message
         if (resized.dimensions) {
+          // e.g. "[Image: source: /tmp/a.png, original 4000x3000, displayed at 1000x750. Multiply coordinates by 4.00 to map to original image.]"
           const metadataText = createImageMetadataText(resized.dimensions)
           if (metadataText) {
             imageMetadataTexts.push(metadataText)
@@ -512,6 +520,7 @@ async function processUserInputBase(
   queryCheckpoint('query_attachment_loading_start')
   const attachmentMessages = shouldExtractAttachments
     ? await toArray(
+        // 
         getAttachmentMessages(
           inputString,
           context,
@@ -573,6 +582,7 @@ async function processUserInputBase(
     if (agentMention) {
       const agentMentionString = `@agent-${agentMention.attachment.agentType}`
       const isSubagentOnly = trimmedInput === agentMentionString
+      // e.g. @agent-reviewer 帮我看这个 bug
       const isPrefix =
         trimmedInput.startsWith(agentMentionString) && !isSubagentOnly
 

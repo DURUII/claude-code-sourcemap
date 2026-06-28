@@ -268,6 +268,8 @@ export function isToolResultContentEmpty(
  * Handle large tool results by persisting to disk instead of truncating.
  * Returns the original block if no persistence needed, or a modified block
  * with the content replaced by a reference to the persisted file.
+ * 
+ * 单个工具结果太大时保存到磁盘
  */
 async function maybePersistLargeToolResult(
   toolResultBlock: ToolResultBlockParam,

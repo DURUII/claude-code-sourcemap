@@ -3,7 +3,7 @@ import type {
   ToolResultBlockParam,
   ToolUseBlock,
 } from '@anthropic-ai/sdk/resources/index.mjs'
-import type { CanUseToolFn } from './hooks/useCanUseTool.js'
+import type { CanUseToolFn } from './hooks/useCanUseTool.js' // 权限确认
 import { FallbackTriggeredError } from './services/api/withRetry.js'
 import {
   calculateTokenWarningState,
@@ -45,7 +45,7 @@ import {
 import { logAntError, logForDebugging } from './utils/debug.js'
 import {
   createUserMessage,
-  createUserInterruptionMessage,
+  createUserInterruptionMessage, // 用户中断消息
   normalizeMessagesForAPI,
   createSystemMessage,
   createAssistantAPIErrorMessage,
@@ -54,7 +54,7 @@ import {
   createMicrocompactBoundaryMessage,
   stripSignatureBlocks,
 } from './utils/messages.js'
-import { generateToolUseSummary } from './services/toolUseSummary/toolUseSummaryGenerator.js'
+import { generateToolUseSummary } from './services/toolUseSummary/toolUseSummaryGenerator.js' // 短摘要
 import { prependUserContext, appendSystemContext } from './utils/api.js'
 import {
   createAttachmentMessage,
@@ -71,7 +71,7 @@ const jobClassifier = feature('TEMPLATES')
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 import {
-  remove as removeFromQueue,
+  remove as removeFromQueue, // 消费完从队列移除
   getCommandsByMaxPriority,
   isSlashCommand,
 } from './utils/messageQueueManager.js'
@@ -111,6 +111,7 @@ import {
 import { createBudgetTracker, checkTokenBudget } from './query/tokenBudget.js'
 import { count } from './utils/array.js'
 
+// 未恢复
 /* eslint-disable @typescript-eslint/no-require-imports */
 const snipModule = feature('HISTORY_SNIP')
   ? (require('./services/compact/snipCompact.js') as typeof import('./services/compact/snipCompact.js'))
@@ -120,6 +121,7 @@ const taskSummaryModule = feature('BG_SESSIONS')
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 
+// generator/iterator/yield function
 function* yieldMissingToolResultBlocks(
   assistantMessages: AssistantMessage[],
   errorMessage: string,
@@ -131,6 +133,7 @@ function* yieldMissingToolResultBlocks(
     ) as ToolUseBlock[]
 
     // Emit an interruption message for each tool use
+    // 
     for (const toolUse of toolUseBlocks) {
       yield createUserMessage({
         content: [
@@ -141,6 +144,15 @@ function* yieldMissingToolResultBlocks(
             tool_use_id: toolUse.id,
           },
         ],
+        /**
+          e.g.
+          'Model fallback triggered', 
+          Request timed out
+          500 Internal Server Error
+          Connection error
+          Array.prototype.with is not a function
+          'Interrupted by user'
+         */
         toolUseResult: errorMessage,
         sourceToolAssistantUUID: assistantMessage.uuid,
       })
@@ -181,21 +193,21 @@ function isWithheldMaxOutputTokens(
 export type QueryParams = {
   messages: Message[]
   systemPrompt: SystemPrompt
-  userContext: { [k: string]: string }
-  systemContext: { [k: string]: string }
-  canUseTool: CanUseToolFn
-  toolUseContext: ToolUseContext
+  userContext: { [k: string]: string } // claudeMd、currentDate -> 伪装成一条 meta user message, meta 不计入 user 发言统计、不回传给 SDK consumer、只在 UI 上隐藏渲染
+  systemContext: { [k: string]: string } // gitStatus、cacheBreaker -> 拼到 system prompt 末尾
+  canUseTool: CanUseToolFn // policy: permission & transform/updatedInput
+  toolUseContext: ToolUseContext // state, 可以被 modify/abort
   fallbackModel?: string
-  querySource: QuerySource
+  querySource: QuerySource 
   maxOutputTokensOverride?: number
   maxTurns?: number
-  skipCacheWrite?: boolean
+  skipCacheWrite?: boolean // fire-and-forget
   // API task_budget (output_config.task_budget, beta task-budgets-2026-03-13).
   // Distinct from the tokenBudget +500k auto-continue feature. `total` is the
   // budget for the whole agentic turn; `remaining` is computed per iteration
   // from cumulative API usage. See configureTaskBudgetParams in claude.ts.
   taskBudget?: { total: number }
-  deps?: QueryDeps
+  deps?: QueryDeps // spyOn
 }
 
 // -- query loop state
@@ -278,6 +290,7 @@ async function* queryLoop(
     pendingToolUseSummary: undefined,
     transition: undefined,
   }
+  // 防止早熟：nudge & diminishing
   const budgetTracker = feature('TOKEN_BUDGET') ? createBudgetTracker() : null
 
   // task_budget.remaining tracking across compaction boundaries. Undefined
@@ -302,7 +315,7 @@ async function* queryLoop(
   using pendingMemoryPrefetch = startRelevantMemoryPrefetch(
     state.messages,
     state.toolUseContext,
-  )
+  ) // 参见 tengu_moth_copse feature
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -333,10 +346,19 @@ async function* queryLoop(
       null,
       messages,
       toolUseContext,
-    )
+    ) // DCE
 
+    // RequestStartEvent
     yield { type: 'stream_request_start' }
 
+    /**
+     * analytics
+     * log 对应 --debug / DEBUG=1 和 logForDebugging
+     * *CLAUDE_CODE_PROFILE_STARTUP 对应 ~/.claude/startup-perf/ 启动性能
+     * CLAUDE_CODE_PROFILE_QUERY
+     * CLAUDE_CODE_PERFETTO_TRACE 
+     * CLAUDE_CODE_FRAME_TIMING_LOG 对应 UI 渲染卡顿
+     */
     queryCheckpoint('query_fn_entry')
 
     // Record query start for headless latency tracking (skip for subagents)
@@ -351,7 +373,7 @@ async function* queryLoop(
           depth: toolUseContext.queryTracking.depth + 1,
         }
       : {
-          chainId: deps.uuid(),
+        chainId: deps.uuid(), // 挂在 ToolUseContext，用于把同一个用户 turn 的多次模型请求日志串起来，fork/subagent 会拿一个 新的 chainId，比父亲深一层
           depth: 0,
         }
 
@@ -363,8 +385,31 @@ async function* queryLoop(
       queryTracking,
     }
 
+    /**
+     * subtype: 'informational'
+     * subtype: 'permission_retry'
+     * subtype: 'bridge_status'
+     * subtype: 'turn_duration'
+     * subtype: 'away_summary'
+     * subtype: 'memory_saved'
+     * subtype: 'api_metrics'
+     * subtype: 'local_command'
+     * subtype: 'compact_boundary'
+     * subtype: 'microcompact_boundary'
+     * subtype: 'api_error'
+     * 
+     * 且 normalizeMessagesForAPI 会移除 error、过滤、附件重排、attachment 转 user message 等等整流
+     */
     let messagesForQuery = [...getMessagesAfterCompactBoundary(messages)]
 
+    /**
+     * 对应 shouldCompact
+     * 记录：
+     * 1. 是否已经发生过 auto compact
+     * 2. auto compact 之后，又经过了多少个 agent 的 turn
+     * 3. 这次 auto compact 的唯一 ID，主要给 analytics 串事件用
+     * 4. auto compact 连续失败次数。超过 3 次后熔断，不再反复尝试
+     */
     let tracking = autoCompactTracking
 
     // Enforce per-message budget on aggregate tool result size. Runs BEFORE
@@ -378,9 +423,9 @@ async function* queryLoop(
       querySource.startsWith('agent:') ||
       querySource.startsWith('repl_main_thread')
     messagesForQuery = await applyToolResultBudget(
-      messagesForQuery,
-      toolUseContext.contentReplacementState,
-      persistReplacements
+      messagesForQuery, // 这里有上一轮的工具结果，有可能存在每个工具结果都没超单工具限制，但多个并行工具结果合起来把下一次 API request 撑爆
+      toolUseContext.contentReplacementState, // 哪些已经被替换过
+      persistReplacements // 写入 transcript，用于 resume
         ? records =>
             void recordContentReplacement(
               records,
@@ -391,8 +436,21 @@ async function* queryLoop(
         toolUseContext.options.tools
           .filter(t => !Number.isFinite(t.maxResultSizeChars))
           .map(t => t.name),
-      ),
+      ), // skipToolNames
     )
+
+    /**
+     * 哪些消息保留、过滤、重排、限流、恢复
+     * 哪些内容缩小、摘要、落盘、清空
+     * 
+     * HISTORY_SNIP
+     * CACHED_MICROCOMPACT
+     * tengu_hawthorn_steeple
+     * tengu_sm_compact
+     * REACTIVE_COMPACT
+     * session-memory
+     * TOKEN_BUDGET
+     */
 
     // Apply snip before microcompact (both may run — they are not mutually exclusive).
     // snipTokensFreed is plumbed to autocompact so its threshold check reflects
@@ -411,6 +469,7 @@ async function* queryLoop(
     }
 
     // Apply microcompact before autocompact
+    // 详见 services/compact/microCompact.ts
     queryCheckpoint('query_microcompact_start')
     const microcompactResult = await deps.microcompact(
       messagesForQuery,
@@ -438,6 +497,7 @@ async function* queryLoop(
     // Within a turn, the view flows forward via state.messages at the
     // continue site (query.ts:1192), and the next projectView() no-ops
     // because the archived messages are already gone from its input.
+    // 具体算法看不到
     if (feature('CONTEXT_COLLAPSE') && contextCollapse) {
       const collapseResult = await contextCollapse.applyCollapsesIfNeeded(
         messagesForQuery,
@@ -447,6 +507,8 @@ async function* queryLoop(
       messagesForQuery = collapseResult.messages
     }
 
+    // 构造真正发给 API 的完整 system prompt
+    // systemContext 是运行时状态
     const fullSystemPrompt = asSystemPrompt(
       appendSystemContext(systemPrompt, systemContext),
     )
@@ -465,9 +527,10 @@ async function* queryLoop(
       querySource,
       tracking,
       snipTokensFreed,
-    )
+    ) // forked query services/compact/prompt.ts
     queryCheckpoint('query_autocompact_end')
 
+    // telemetry 日志/遥测
     if (compactionResult) {
       const {
         preCompactTokenCount,
@@ -546,10 +609,10 @@ async function* queryLoop(
     //TODO: no need to set toolUseContext.messages during set-up since it is updated here
     toolUseContext = {
       ...toolUseContext,
-      messages: messagesForQuery,
+      messages: messagesForQuery, // 终于
     }
 
-    const assistantMessages: AssistantMessage[] = []
+    const assistantMessages: AssistantMessage[] = [] // text, thinking, tool_use
     const toolResults: (UserMessage | AttachmentMessage)[] = []
     // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
     // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
@@ -560,6 +623,11 @@ async function* queryLoop(
 
     queryCheckpoint('query_setup_start')
     const useStreamingToolExecution = config.gates.streamingToolExecution
+    /**
+     * 模型还在 streaming，只要某个 tool_use block 完整到达，就可以提前开始跑工具
+     * 普通模式是：整轮 streaming 结束 → 收集所有 tool_use → 再执行工具
+     * StreamingToolExecutor：看到 tool_use A → 排队执行 A，tool_use B → 并发安全，B 也可以一起跑/不安全，串行排队
+     */
     let streamingToolExecutor = useStreamingToolExecution
       ? new StreamingToolExecutor(
           toolUseContext.options.tools,
@@ -575,7 +643,7 @@ async function* queryLoop(
       mainLoopModel: toolUseContext.options.mainLoopModel,
       exceeds200kTokens:
         permissionMode === 'plan' &&
-        doesMostRecentAssistantMessageExceed200k(messagesForQuery),
+        doesMostRecentAssistantMessageExceed200k(messagesForQuery), // 不允许 sonnet[1m] -> opus plan
     })
 
     queryCheckpoint('query_setup_end')
@@ -588,7 +656,7 @@ async function* queryLoop(
     // between queries (e.g., /clear command or session resume).
     const dumpPromptsFetch = config.gates.isAnt
       ? createDumpPromptsFetch(toolUseContext.agentId ?? config.sessionId)
-      : undefined
+      : undefined // ~/.claude/dump-prompts/, 内部 debug / issue 诊断，因为 transcript 不是最终 API payload*；外部用 /feedback 或 /bug
 
     // Block if we've hit the hard blocking limit (only applies when auto-compact is OFF)
     // This reserves space so users can still run /compact manually
@@ -638,7 +706,7 @@ async function* queryLoop(
       const { isAtBlockingLimit } = calculateTokenWarningState(
         tokenCountWithEstimation(messagesForQuery) - snipTokensFreed,
         toolUseContext.options.mainLoopModel,
-      )
+      )// 3000 v.s. 13000
       if (isAtBlockingLimit) {
         yield createAssistantAPIErrorMessage({
           content: PROMPT_TOO_LONG_ERROR_MESSAGE,
@@ -658,6 +726,7 @@ async function* queryLoop(
           let streamingFallbackOccured = false
           queryCheckpoint('query_api_streaming_start')
           for await (const message of deps.callModel({
+            // claudeMd & currentDate
             messages: prependUserContext(messagesForQuery, userContext),
             systemPrompt: fullSystemPrompt,
             thinkingConfig: toolUseContext.options.thinkingConfig,
@@ -667,7 +736,7 @@ async function* queryLoop(
               async getToolPermissionContext() {
                 const appState = toolUseContext.getAppState()
                 return appState.toolPermissionContext
-              },
+              }, // 传函数，权限状态可能在一轮 query 期间变化
               model: currentModel,
               ...(config.gates.fastModeEnabled && {
                 fastMode: appState.fastMode,
@@ -680,9 +749,9 @@ async function* queryLoop(
                 streamingFallbackOccured = true
               },
               querySource,
-              agents: toolUseContext.options.agentDefinitions.activeAgents,
+              agents: toolUseContext.options.agentDefinitions.activeAgents,// built-in agents，plugin agents，custom agents
               allowedAgentTypes:
-                toolUseContext.options.agentDefinitions.allowedAgentTypes,
+                toolUseContext.options.agentDefinitions.allowedAgentTypes,// 
               hasAppendSystemPrompt:
                 !!toolUseContext.options.appendSystemPrompt,
               maxOutputTokensOverride,
@@ -710,7 +779,7 @@ async function* queryLoop(
             // We won't use the tool_calls from the first attempt
             // We could.. but then we'd have to merge assistant messages
             // with different ids and double up on full the tool_results
-            if (streamingFallbackOccured) {
+            if (streamingFallbackOccured) { // 从 streaming fallback 到 non-streaming
               // Yield tombstones for orphaned messages so they're removed from UI and transcript.
               // These partial messages (especially thinking blocks) have invalid signatures
               // that would cause "thinking blocks cannot be modified" API errors.
@@ -797,7 +866,7 @@ async function* queryLoop(
             // feature() only works in if/ternary conditions (bun:bundle
             // tree-shaking constraint), so the collapse check is nested
             // rather than composed.
-            let withheld = false
+            let withheld = false // 本地 query loop 其实有恢复逻辑，不要立刻 yield 给 UI/SDK，e.g. media-size error
             if (feature('CONTEXT_COLLAPSE')) {
               if (
                 contextCollapse?.isWithheldPromptTooLong(
@@ -832,7 +901,7 @@ async function* queryLoop(
               ) as ToolUseBlock[]
               if (msgToolUseBlocks.length > 0) {
                 toolUseBlocks.push(...msgToolUseBlocks)
-                needsFollowUp = true
+                needsFollowUp = true // 有 tool_use，说明循环还没结束
               }
 
               if (
@@ -840,7 +909,7 @@ async function* queryLoop(
                 !toolUseContext.abortController.signal.aborted
               ) {
                 for (const toolBlock of msgToolUseBlocks) {
-                  streamingToolExecutor.addTool(toolBlock, message)
+                  streamingToolExecutor.addTool(toolBlock, message) // executor 开始跑
                 }
               }
             }
@@ -851,13 +920,13 @@ async function* queryLoop(
             ) {
               for (const result of streamingToolExecutor.getCompletedResults()) {
                 if (result.message) {
-                  yield result.message
+                  yield result.message // 外层消费者：前端/终端 UI
                   toolResults.push(
                     ...normalizeMessagesForAPI(
                       [result.message],
                       toolUseContext.options.tools,
                     ).filter(_ => _.type === 'user'),
-                  )
+                  )// 收集起来，周面追加进 messagesForQuery
                 }
               }
             }
@@ -894,7 +963,7 @@ async function* queryLoop(
         } catch (innerError) {
           if (innerError instanceof FallbackTriggeredError && fallbackModel) {
             // Fallback was triggered - switch model and retry
-            currentModel = fallbackModel
+            currentModel = fallbackModel // 切模型
             attemptWithFallback = true
 
             // Clear assistant messages since we'll retry the entire request
@@ -1221,6 +1290,7 @@ async function* queryLoop(
           continue
         }
 
+        // WithheldMaxOutputTokens：1. ESCALATED_MAX_TOKENS 2. Resume
         if (maxOutputTokensRecoveryCount < MAX_OUTPUT_TOKENS_RECOVERY_LIMIT) {
           const recoveryMessage = createUserMessage({
             content:
@@ -1262,7 +1332,7 @@ async function* queryLoop(
       // error → hook blocking → retry → error → …
       if (lastMessage?.isApiErrorMessage) {
         void executeStopFailureHooks(lastMessage, toolUseContext)
-        return { reason: 'completed' }
+        return { reason: 'completed' } // 不跑 stop hooks
       }
 
       const stopHookResult = yield* handleStopHooks(
@@ -1358,6 +1428,7 @@ async function* queryLoop(
       return { reason: 'completed' }
     }
 
+    // 走到这里说明 needsFollowUp === true
     let shouldPreventContinuation = false
     let updatedToolUseContext = toolUseContext
 
@@ -1379,8 +1450,8 @@ async function* queryLoop(
     }
 
     const toolUpdates = streamingToolExecutor
-      ? streamingToolExecutor.getRemainingResults()
-      : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+      ? streamingToolExecutor.getRemainingResults() // 前面已经边 streaming 边启动了，等待剩下还没完成的工具
+      : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext) // 执行整批工具
 
     for await (const update of toolUpdates) {
       if (update.message) {
@@ -1390,7 +1461,7 @@ async function* queryLoop(
           update.message.type === 'attachment' &&
           update.message.attachment.type === 'hook_stopped_continuation'
         ) {
-          shouldPreventContinuation = true
+          shouldPreventContinuation = true // hook 
         }
 
         toolResults.push(
@@ -1467,6 +1538,7 @@ async function* queryLoop(
       })
 
       // Fire off summary generation without blocking the next API call
+      // 给 UI/SDK/mobile 看
       nextPendingToolUseSummary = generateToolUseSummary({
         tools: toolInfoForSummary,
         signal: toolUseContext.abortController.signal,
@@ -1523,7 +1595,7 @@ async function* queryLoop(
 
     if (tracking?.compacted) {
       tracking.turnCounter++
-      logEvent('tengu_post_autocompact_turn', {
+      logEvent('tengu_post_autocompact_turn', { // 做 analytics
         turnId:
           tracking.turnId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         turnCounter: tracking.turnCounter,
@@ -1568,7 +1640,7 @@ async function* queryLoop(
     const isMainThread =
       querySource.startsWith('repl_main_thread') || querySource === 'sdk'
     const currentAgentId = toolUseContext.agentId
-    const queuedCommandsSnapshot = getCommandsByMaxPriority(
+    const queuedCommandsSnapshot = getCommandsByMaxPriority( // 后台 task notification、用户 queued prompt 等
       sleepRan ? 'later' : 'next',
     ).filter(cmd => {
       if (isSlashCommand(cmd)) return false
@@ -1612,7 +1684,7 @@ async function* queryLoop(
         toolResults.push(msg)
       }
       pendingMemoryPrefetch.consumedOnIteration = turnCount - 1
-    }
+    } // 类似推荐引擎，但是不是等检索完成后才开始主模型请求，和模型 streaming / 工具执行并行跑；等工具结束后，如果结果好了，就拿来塞进下一轮上下文，否则就跳过
 
 
     // Inject prefetched skill discovery. collectSkillDiscoveryPrefetch emits
@@ -1658,7 +1730,7 @@ async function* queryLoop(
     })
 
     // Refresh tools between turns so newly-connected MCP servers become available
-    if (updatedToolUseContext.options.refreshTools) {
+    if (updatedToolUseContext.options.refreshTools) { // 刷新工具列表
       const refreshedTools = updatedToolUseContext.options.refreshTools()
       if (refreshedTools !== updatedToolUseContext.options.tools) {
         updatedToolUseContext = {
