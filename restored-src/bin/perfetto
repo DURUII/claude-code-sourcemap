@@ -10,9 +10,9 @@ OPEN_TRACE_URL="https://raw.githubusercontent.com/google/perfetto/main/tools/ope
 usage() {
   cat <<'USAGE'
 Usage:
-  bin/perfetto-trace [trace-file]
-  bin/perfetto-trace --latest
-  bin/perfetto-trace --list
+  bin/perfetto [trace-file]
+  bin/perfetto --latest
+  bin/perfetto --list
 
 Options:
   --latest           Open the newest trace file. This is the default.
@@ -93,8 +93,16 @@ fi
 
 ensure_open_trace
 
+run_open_trace() {
+  "$OPEN_TRACE" "$@" 2> >(
+    grep -v \
+      -e 'code 404, message File not found' \
+      -e 'POST /status HTTP/1.1" 404 -' >&2
+  )
+}
+
 if [ "$open_browser" -eq 1 ]; then
-  exec "$OPEN_TRACE" "$trace"
+  run_open_trace "$trace"
 else
-  exec "$OPEN_TRACE" --no-open-browser "$trace"
+  run_open_trace --no-open-browser "$trace"
 fi

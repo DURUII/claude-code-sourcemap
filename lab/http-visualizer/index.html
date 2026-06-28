@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" class="vscode-dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Claude Code Scope</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="rail">
+        <button id="rail-toggle" class="rail-toggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar">‹</button>
+        <div class="rail-collapsed-label">Scope</div>
+        <div class="brand">
+          <div class="brand-top">
+            <div>
+              <div class="brand-kicker">runtime scope</div>
+              <h1>Claude Code Scope</h1>
+            </div>
+            <div class="status-pill">
+              <span id="connection-dot" class="dot"></span>
+              <span id="connection-label">Connecting</span>
+            </div>
+          </div>
+          <div class="brand-actions">
+            <button id="copy-env" type="button">Connect CLI</button>
+            <span class="brand-hint">append-only request ledger</span>
+          </div>
+          <div class="handle-summary" id="handle-summary">No handle selected</div>
+        </div>
+        <div class="event-list" id="event-list"></div>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <div class="eyebrow">Runtime Payload</div>
+            <h2 id="request-title">Waiting for ./bin/claude</h2>
+          </div>
+          <div class="actions">
+            <button id="clear-events" type="button">Clear</button>
+          </div>
+        </header>
+
+        <section class="overview-grid" id="overview-grid"></section>
+
+        <nav class="tabs" id="tabs">
+          <button class="tab active" data-tab="system">System <span id="count-system">0</span></button>
+          <button class="tab" data-tab="messages">Messages <span id="count-messages">0</span></button>
+          <button class="tab" data-tab="tools">Tools <span id="count-tools">0</span></button>
+          <button class="tab" data-tab="output">Output</button>
+          <button class="tab" data-tab="delta">Delta</button>
+          <button class="tab" data-tab="transport">Transport</button>
+          <button class="tab" data-tab="raw">Raw JSON</button>
+        </nav>
+
+        <section class="panel active" id="panel-system"></section>
+        <section class="panel" id="panel-messages"></section>
+        <section class="panel" id="panel-tools"></section>
+        <section class="panel" id="panel-output"></section>
+        <section class="panel" id="panel-delta"></section>
+        <section class="panel" id="panel-transport"></section>
+        <section class="panel" id="panel-raw"></section>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

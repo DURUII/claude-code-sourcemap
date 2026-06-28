@@ -5,7 +5,7 @@ performance, logs, traces, and feature flags. It is intentionally host-neutral:
 run it on a laptop, NAS, homelab machine, VPS, or cloud VM.
 
 Do not commit real deployment values. Put hostnames, Tailscale domains, public
-IPs, passwords, and GrowthBook SDK keys in your private `.env` or shell profile.
+IPs, passwords, and GrowthBook SDK keys in private env files only.
 
 ## Components
 
@@ -39,6 +39,9 @@ GROWTHBOOK_API_HOST=http://<host>:3100
 
 For a same-machine development setup, `<host>` can be `localhost`.
 
+`deploy/telemetry/.env` is for the Docker Compose stack only. It configures
+Grafana, GrowthBook, MongoDB, and service origins on the deployment host.
+
 ## Open
 
 Replace `<host>` with your own host:
@@ -60,23 +63,20 @@ Query Loki through Grafana Explore. Inside the compose network, Loki is
 
 ## Point Claude Code At The Stack
 
-For a local development stack:
+Claude runtime env belongs in the restored checkout, not in
+`deploy/telemetry/.env`. Copy the runtime example into the ignored local
+`.claude` directory:
 
 ```bash
-CLAUDE_RESTORED_TELEMETRY=1 \
-CLAUDE_CODE_ENABLE_TELEMETRY=1 \
-OTEL_LOGS_EXPORTER=otlp \
-OTEL_METRICS_EXPORTER=otlp \
-OTEL_TRACES_EXPORTER=otlp \
-OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
-OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318 \
-CLAUDE_CODE_GB_BASE_URL=http://127.0.0.1:3100 \
-CLAUDE_CODE_GB_CLIENT_KEY=<growthbook-sdk-client-key> \
+cd restored-src
+mkdir -p .claude
+cp deploy/telemetry/claude.telemetry.env.example .claude/telemetry.env
+$EDITOR .claude/telemetry.env
 ./bin/claude
 ```
 
-For a remote deployment, replace `127.0.0.1` with your private host and add
-proxy bypass rules as needed:
+For a local development stack, use `127.0.0.1` or `localhost` for `<host>`.
+For a remote deployment, use your private host and add proxy bypass rules:
 
 ```bash
 export NO_PROXY="<host>,localhost,127.0.0.1"
@@ -87,6 +87,16 @@ export no_proxy="$NO_PROXY"
 `CLAUDE_RESTORED_TELEMETRY=1`. Public checkouts do not send telemetry anywhere
 by default.
 
+The ignored local file should look like:
+
+```env
+CLAUDE_RESTORED_TELEMETRY=1
+OTEL_EXPORTER_OTLP_ENDPOINT=http://<host>:4318
+CLAUDE_CODE_GB_BASE_URL=http://<host>:3100
+CLAUDE_CODE_GB_CLIENT_KEY=<growthbook-sdk-client-key>
+CLAUDE_CODE_PERFETTO_TRACE=1
+```
+
 Sensitive payloads remain opt-in:
 
 ```bash
@@ -94,6 +104,31 @@ OTEL_LOG_USER_PROMPTS=1
 OTEL_LOG_TOOL_DETAILS=1
 OTEL_LOG_TOOL_CONTENT=1
 ```
+
+## HTTP Request Visualizer
+
+`lab/http-visualizer` is a local browser tool for inspecting the actual Claude
+API request payload as it leaves `src/services/api/claude.ts`. It is separate
+from OTLP/Grafana telemetry and is intended for source-study debugging.
+
+Start the visualizer:
+
+```bash
+cd lab/http-visualizer
+npm test
+npm start
+```
+
+Then enable the sink in `restored-src/.claude/telemetry.env`:
+
+```env
+CLAUDE_CODE_HTTP_VISUALIZER_ENDPOINT=http://127.0.0.1:8788/ingest
+```
+
+Open `http://127.0.0.1:8788` and run `./bin/claude`. The restored runtime
+emits request events through `src/services/api/apiRequestObserver.ts`. The
+observer name is intentional: the code observes API requests and can feed a
+visualizer, but the API layer itself is not coupled to a UI.
 
 ## GrowthBook Notes
 

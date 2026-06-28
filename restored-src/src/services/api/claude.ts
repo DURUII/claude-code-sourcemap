@@ -188,6 +188,7 @@ import {
   isDeferredToolsDeltaEnabled,
   isToolSearchEnabled,
 } from 'src/utils/toolSearch.js'
+import { observeApiRequest } from './apiRequestObserver.js'
 import { API_MAX_MEDIA_PER_REQUEST } from '../../constants/apiLimits.js'
 import { ADVISOR_BETA_HEADER } from '../../constants/betas.js'
 import {
@@ -1053,6 +1054,7 @@ async function* queryModel(
   // so concurrent agents don't clobber each other's request chain tracking.
   // Also naturally handles rollback/undo since removed messages won't be in the array.
   const previousRequestId = getPreviousRequestIdFromMessages(messages)
+  const apiRequestCorrelationId = randomUUID()
 
   const resolvedModel =
     getAPIProvider() === 'bedrock' &&
@@ -1814,6 +1816,13 @@ async function* queryModel(
           getAPIProvider() === 'firstParty' && isFirstPartyAnthropicBaseUrl()
             ? randomUUID()
             : undefined
+        observeApiRequest({
+          params,
+          correlationId: apiRequestCorrelationId,
+          querySource: options.querySource,
+          attempt,
+          clientRequestId,
+        })
 
         // Use raw stream instead of BetaMessageStream to avoid O(n²) partial JSON parsing
         // BetaMessageStream calls partialParse() on every input_json_delta, which we don't need

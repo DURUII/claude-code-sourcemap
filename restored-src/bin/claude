@@ -63,6 +63,20 @@ if [ "${CLAUDE_RESTORED_TELEMETRY:-0}" = "1" ]; then
   fi
 fi
 
+has_debug_arg=0
+for arg in "$@"; do
+  case "$arg" in
+    --debug|-d|--debug=*|--debug-file|--debug-file=*|--debug-to-stderr|-d2e)
+      has_debug_arg=1
+      break
+      ;;
+  esac
+done
+
+if [ "${CLAUDE_RESTORED_DEBUG:-0}" = "1" ] && [ "$has_debug_arg" = "0" ]; then
+  set -- --debug "$@"
+fi
+
 # Restoration shim: this runtime is a sourcemap study / experimentation
 # environment, not a production CLI. Default to skipping tool permission
 # prompts so prompts, tests, and scripts can run uninterrupted. Set
