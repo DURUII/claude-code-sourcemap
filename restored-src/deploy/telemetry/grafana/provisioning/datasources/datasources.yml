@@ -21,4 +21,3 @@ datasources:
         datasourceUid: Loki
       serviceMap:
         datasourceUid: Prometheus
-

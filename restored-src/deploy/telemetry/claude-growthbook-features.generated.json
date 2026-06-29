@@ -1,0 +1,3282 @@
+{
+  "generatedAt": "2026-06-29T09:36:08.564Z",
+  "sourceRoot": "restored-src",
+  "features": [
+    {
+      "key": "enhanced_telemetry_beta",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/telemetry/sessionTracing.ts",
+          "line": 146,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_1p_event_batch_config",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/analytics/firstPartyEventLogger.ts",
+          "line": 98,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_agent_list_attach",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/AgentTool/prompt.ts",
+          "line": 63,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_amber_flint",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/agentSwarmsEnabled.ts",
+          "line": 39,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_amber_json_tools",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/betas.ts",
+          "line": 325,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_amber_prism",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/messages.ts",
+          "line": 188,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_amber_quartz_disabled",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/voice/voiceModeEnabled.ts",
+          "line": 21,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_amber_stoat",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/AgentTool/builtInAgents.ts",
+          "line": 17,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_amber_wren",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/FileReadTool/limits.ts",
+          "line": 55,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_ant_model_override",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/model/antModels.ts",
+          "line": 39,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_anti_distill_fake_tool_injection",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/api/claude.ts",
+          "line": 307,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_attribution_header",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/constants/system.ts",
+          "line": 56,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_auto_background_agents",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/AgentTool/AgentTool.tsx",
+          "line": 73,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_auto_mode_config",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/vscodeSdkMcp.ts",
+          "line": 15,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        },
+        {
+          "file": "src/utils/betas.ts",
+          "line": 173,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        },
+        {
+          "file": "src/utils/permissions/yoloClassifier.ts",
+          "line": 73,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{} as AutoModeConfig"
+        },
+        {
+          "file": "src/utils/permissions/yoloClassifier.ts",
+          "line": 1351,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{} as AutoModeConfig"
+        },
+        {
+          "file": "src/utils/permissions/yoloClassifier.ts",
+          "line": 1376,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{} as AutoModeConfig"
+        },
+        {
+          "file": "src/utils/permissions/yoloClassifier.ts",
+          "line": 1397,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{} as AutoModeConfig"
+        },
+        {
+          "file": "src/utils/permissions/permissionSetup.ts",
+          "line": 1091,
+          "fn": "getDynamicConfig_BLOCKS_ON_INIT",
+          "defaultRaw": "{}"
+        },
+        {
+          "file": "src/utils/permissions/permissionSetup.ts",
+          "line": 1329,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_bad_survey_transcript_ask_config",
+      "defaults": [
+        {
+          "value": {
+            "probability": 0
+          },
+          "raw": "DEFAULT_TRANSCRIPT_ASK_CONFIG"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/FeedbackSurvey/useFeedbackSurvey.tsx",
+          "line": 59,
+          "fn": "useDynamicConfig",
+          "defaultRaw": "DEFAULT_TRANSCRIPT_ASK_CONFIG"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "probability": 0
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_basalt_3kr",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/mcpInstructionsDelta.ts",
+          "line": 42,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_birch_trellis",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/BashTool/bashPermissions.ts",
+          "line": 1684,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_bramble_lintel",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/extractMemories/extractMemories.ts",
+          "line": 381,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_bridge_initial_history_cap",
+      "defaults": [
+        {
+          "value": 200,
+          "raw": "200"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/initReplBridge.ts",
+          "line": 380,
+          "fn": "getFeatureValue_CACHED_WITH_REFRESH",
+          "defaultRaw": "200"
+        }
+      ],
+      "valueType": "number",
+      "defaultValue": 200,
+      "conflict": false
+    },
+    {
+      "key": "tengu_bridge_min_version",
+      "defaults": [
+        {
+          "value": {
+            "minVersion": "0.0.0"
+          },
+          "raw": "{ minVersion: '0.0.0' }"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 165,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{ minVersion: '0.0.0' }"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "minVersion": "0.0.0"
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_bridge_repl_v2",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 128,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_bridge_repl_v2_config",
+      "defaults": [
+        {
+          "value": {
+            "init_retry_max_attempts": 3,
+            "init_retry_base_delay_ms": 500,
+            "init_retry_jitter_fraction": 0.25,
+            "init_retry_max_delay_ms": 4000,
+            "http_timeout_ms": 10000,
+            "uuid_dedup_buffer_size": 2000,
+            "heartbeat_interval_ms": 20000,
+            "heartbeat_jitter_fraction": 0.1,
+            "token_refresh_buffer_ms": 300000,
+            "teardown_archive_timeout_ms": 1500,
+            "connect_timeout_ms": 15000,
+            "min_version": "0.0.0",
+            "should_show_app_upgrade_message": false
+          },
+          "raw": "DEFAULT_ENV_LESS_BRIDGE_CONFIG"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/envLessBridgeConfig.ts",
+          "line": 131,
+          "fn": "getFeatureValue_DEPRECATED",
+          "defaultRaw": "DEFAULT_ENV_LESS_BRIDGE_CONFIG"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "init_retry_max_attempts": 3,
+        "init_retry_base_delay_ms": 500,
+        "init_retry_jitter_fraction": 0.25,
+        "init_retry_max_delay_ms": 4000,
+        "http_timeout_ms": 10000,
+        "uuid_dedup_buffer_size": 2000,
+        "heartbeat_interval_ms": 20000,
+        "heartbeat_jitter_fraction": 0.1,
+        "token_refresh_buffer_ms": 300000,
+        "teardown_archive_timeout_ms": 1500,
+        "connect_timeout_ms": 15000,
+        "min_version": "0.0.0",
+        "should_show_app_upgrade_message": false
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_bridge_repl_v2_cse_shim_enabled",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 143,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_bridge_system_init",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/hooks/useReplBridge.tsx",
+          "line": 291,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_ccr_bridge",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 34,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 53,
+          "fn": "checkGate_CACHED_OR_BLOCKING",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 81,
+          "fn": "checkGate_CACHED_OR_BLOCKING",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_ccr_bridge_multi_session",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/bridgeMain.ts",
+          "line": 97,
+          "fn": "checkGate_CACHED_OR_BLOCKING",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_ccr_bundle_max_bytes",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/teleport/gitBundle.ts",
+          "line": 220,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_ccr_bundle_seed_enabled",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/teleport.tsx",
+          "line": 944,
+          "fn": "checkGate_CACHED_OR_BLOCKING",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/background/remote/remoteSession.ts",
+          "line": 79,
+          "fn": "checkGate_CACHED_OR_BLOCKING",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_ccr_mirror",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 200,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_chair_sermon",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/messages.ts",
+          "line": 2273,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/messages.ts",
+          "line": 2340,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/messages.ts",
+          "line": 2621,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/messages.ts",
+          "line": 5377,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_chomp_inflection",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/PromptSuggestion/promptSuggestion.ts",
+          "line": 58,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/components/Settings/Config.tsx",
+          "line": 379,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_chrome_auto_enable",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/claudeInChrome/setup.ts",
+          "line": 81,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_cicada_nap_ms",
+      "defaults": [
+        {
+          "value": 0,
+          "raw": "0"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/main.tsx",
+          "line": 2344,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "0"
+        }
+      ],
+      "valueType": "number",
+      "defaultValue": 0,
+      "conflict": false
+    },
+    {
+      "key": "tengu_cobalt_frost",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/voiceStreamSTT.ts",
+          "line": 157,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_cobalt_harbor",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/bridgeEnabled.ts",
+          "line": 187,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_cobalt_lantern",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/skills/bundled/scheduleRemoteAgents.ts",
+          "line": 320,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/skills/bundled/scheduleRemoteAgents.ts",
+          "line": 400,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/commands/remote-setup/index.ts",
+          "line": 12,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/background/remote/preconditions.ts",
+          "line": 229,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_cobalt_raccoon",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/compact/autoCompact.ts",
+          "line": 196,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/analyzeContext.ts",
+          "line": 1115,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/components/TokenWarning.tsx",
+          "line": 131,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_collage_kaleidoscope",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/imagePaste.ts",
+          "line": 102,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        },
+        {
+          "file": "src/utils/imagePaste.ts",
+          "line": 134,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_compact_cache_prefix",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/compact/compact.ts",
+          "line": 435,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        },
+        {
+          "file": "src/services/compact/compact.ts",
+          "line": 1155,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_compact_line_prefix_killswitch",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/file.ts",
+          "line": 281,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_compact_streaming_retry",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/compact/compact.ts",
+          "line": 1251,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_copper_bridge",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/claudeInChrome/mcpServer.ts",
+          "line": 54,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_copper_panda",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/hooks/skillImprovement.ts",
+          "line": 178,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_coral_fern",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/memdir/memdir.ts",
+          "line": 382,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_cork_m4q",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/shell/prefix.ts",
+          "line": 215,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_desktop_upsell",
+      "defaults": [
+        {
+          "value": {
+            "enable_shortcut_tip": false,
+            "enable_startup_dialog": false
+          },
+          "raw": "DESKTOP_UPSELL_DEFAULT"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/DesktopUpsell/DesktopUpsellStartup.tsx",
+          "line": 20,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "DESKTOP_UPSELL_DEFAULT"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "enable_shortcut_tip": false,
+        "enable_startup_dialog": false
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_destructive_command_warning",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/permissions/BashPermissionRequest/BashPermissionRequest.tsx",
+          "line": 274,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/components/permissions/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx",
+          "line": 60,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_disable_bypass_permissions_mode",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/permissions/permissionSetup.ts",
+          "line": 700,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/permissions/permissionSetup.ts",
+          "line": 933,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/permissions/permissionSetup.ts",
+          "line": 1266,
+          "fn": "checkSecurityRestrictionGate",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/permissions/permissionSetup.ts",
+          "line": 1373,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_disable_keepalive_on_econnreset",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/api/withRetry.ts",
+          "line": 221,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_disable_streaming_to_non_streaming_fallback",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/api/claude.ts",
+          "line": 2480,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_dunwich_bell",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/FeedbackSurvey/useMemorySurvey.tsx",
+          "line": 169,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_enable_settings_sync_push",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/settingsSync/index.ts",
+          "line": 64,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_event_sampling_config",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/analytics/firstPartyEventLogger.ts",
+          "line": 44,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_feedback_survey_config",
+      "defaults": [
+        {
+          "value": {
+            "minTimeBeforeFeedbackMs": 600000,
+            "minTimeBetweenFeedbackMs": 3600000,
+            "minTimeBetweenGlobalFeedbackMs": 100000000,
+            "minUserTurnsBeforeFeedback": 5,
+            "minUserTurnsBetweenFeedback": 10,
+            "hideThanksAfterMs": 3000,
+            "onForModels": [
+              "*"
+            ],
+            "probability": 0.005
+          },
+          "raw": "DEFAULT_FEEDBACK_SURVEY_CONFIG"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/FeedbackSurvey/useFeedbackSurvey.tsx",
+          "line": 58,
+          "fn": "useDynamicConfig",
+          "defaultRaw": "DEFAULT_FEEDBACK_SURVEY_CONFIG"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "minTimeBeforeFeedbackMs": 600000,
+        "minTimeBetweenFeedbackMs": 3600000,
+        "minTimeBetweenGlobalFeedbackMs": 100000000,
+        "minUserTurnsBeforeFeedback": 5,
+        "minUserTurnsBetweenFeedback": 10,
+        "hideThanksAfterMs": 3000,
+        "onForModels": [
+          "*"
+        ],
+        "probability": 0.005
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_fgts",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/api.ts",
+          "line": 202,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_frond_boric",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/analytics/sinkKillswitch.ts",
+          "line": 19,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_glacier_2xr",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/ToolSearchTool/prompt.ts",
+          "line": 38,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/toolSearch.ts",
+          "line": 632,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_good_survey_transcript_ask_config",
+      "defaults": [
+        {
+          "value": {
+            "probability": 0
+          },
+          "raw": "DEFAULT_TRANSCRIPT_ASK_CONFIG"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/FeedbackSurvey/useFeedbackSurvey.tsx",
+          "line": 60,
+          "fn": "useDynamicConfig",
+          "defaultRaw": "DEFAULT_TRANSCRIPT_ASK_CONFIG"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "probability": 0
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_grey_step2",
+      "defaults": [
+        {
+          "value": {
+            "enabled": true,
+            "dialogTitle": "We recommend medium effort for Opus",
+            "dialogDescription": "Effort determines how long Claude thinks for when completing your task. We recommend medium effort for most tasks to balance speed and intelligence and maximize rate limits. Use ultrathink to trigger high effort when needed."
+          },
+          "raw": "OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/effort.ts",
+          "line": 268,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "enabled": true,
+        "dialogTitle": "We recommend medium effort for Opus",
+        "dialogDescription": "Effort determines how long Claude thinks for when completing your task. We recommend medium effort for most tasks to balance speed and intelligence and maximize rate limits. Use ultrathink to trigger high effort when needed."
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_harbor",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/channelAllowlist.ts",
+          "line": 52,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/interactiveHelpers.tsx",
+          "line": 251,
+          "fn": "checkGate_CACHED_OR_BLOCKING",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_harbor_ledger",
+      "defaults": [
+        {
+          "value": [],
+          "raw": "[]"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/channelAllowlist.ts",
+          "line": 38,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "[]"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": [],
+      "conflict": false
+    },
+    {
+      "key": "tengu_harbor_permissions",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/channelPermissions.ts",
+          "line": 37,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_hawthorn_steeple",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/toolResultStorage.ts",
+          "line": 455,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_hawthorn_window",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/toolResultStorage.ts",
+          "line": 426,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_herring_clock",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/memdir/teamMemPaths.ts",
+          "line": 77,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/memdir/memdir.ts",
+          "line": 509,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_hive_evidence",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/constants/prompts.ts",
+          "line": 443,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/tools/TaskUpdateTool/TaskUpdateTool.ts",
+          "line": 336,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/tools/AgentTool/builtInAgents.ts",
+          "line": 66,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/tools/TodoWriteTool/TodoWriteTool.ts",
+          "line": 79,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_immediate_model_command",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/immediateCommand.ts",
+          "line": 13,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_iron_gate_closed",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/permissions/permissions.ts",
+          "line": 847,
+          "fn": "getFeatureValue_CACHED_WITH_REFRESH",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_jade_anvil_4",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/commands/rate-limit-options/rate-limit-options.tsx",
+          "line": 52,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_kairos_brief",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/BriefTool/BriefTool.ts",
+          "line": 94,
+          "fn": "getFeatureValue_CACHED_WITH_REFRESH",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/components/Spinner.tsx",
+          "line": 77,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/components/messages/UserPromptMessage.tsx",
+          "line": 61,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_kairos_brief_config",
+      "defaults": [
+        {
+          "value": {
+            "enable_slash_command": false
+          },
+          "raw": "DEFAULT_BRIEF_CONFIG"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/commands/brief.ts",
+          "line": 39,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "DEFAULT_BRIEF_CONFIG"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "enable_slash_command": false
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_kairos_cron",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/ScheduleCronTool/prompt.ts",
+          "line": 39,
+          "fn": "getFeatureValue_CACHED_WITH_REFRESH",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_kairos_cron_durable",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/ScheduleCronTool/prompt.ts",
+          "line": 57,
+          "fn": "getFeatureValue_CACHED_WITH_REFRESH",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_keybinding_customization_release",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/keybindings/loadUserBindings.ts",
+          "line": 42,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_lapis_finch",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/plugins/hintRecommendation.ts",
+          "line": 66,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_lodestone_enabled",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/deepLink/registerProtocol.ts",
+          "line": 302,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_log_datadog_events",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/analytics/sink.ts",
+          "line": 39,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/services/analytics/sink.ts",
+          "line": 98,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_malort_pedway",
+      "defaults": [
+        {
+          "value": {
+            "enabled": false,
+            "pixelValidation": false,
+            "clipboardPasteMultiline": true,
+            "mouseAnimation": true,
+            "hideBeforeAction": true,
+            "autoTargetDisplay": true,
+            "clipboardGuard": true,
+            "coordinateMode": "pixels"
+          },
+          "raw": "DEFAULTS"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/computerUse/gates.ts",
+          "line": 29,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "DEFAULTS"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "enabled": false,
+        "pixelValidation": false,
+        "clipboardPasteMultiline": true,
+        "mouseAnimation": true,
+        "hideBeforeAction": true,
+        "autoTargetDisplay": true,
+        "clipboardGuard": true,
+        "coordinateMode": "pixels"
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_marble_fox",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/attachments.ts",
+          "line": 3935,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_marble_sandcastle",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/fastMode.ts",
+          "line": 91,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_max_version_config",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/autoUpdater.ts",
+          "line": 130,
+          "fn": "getDynamicConfig_BLOCKS_ON_INIT",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_miraculo_the_bard",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/main.tsx",
+          "line": 2357,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_moth_copse",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/extractMemories/extractMemories.ts",
+          "line": 366,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/memdir/memdir.ts",
+          "line": 428,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/claudemd.ts",
+          "line": 1145,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/attachments.ts",
+          "line": 2367,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_onyx_plover",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/autoDream/config.ts",
+          "line": 16,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        },
+        {
+          "file": "src/services/autoDream/autoDream.ts",
+          "line": 75,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_otk_slot_v1",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/api/claude.ts",
+          "line": 3405,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/query.ts",
+          "line": 1265,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_paper_halyard",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/claudemd.ts",
+          "line": 1158,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/attachments.ts",
+          "line": 1823,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_passport_quail",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/extractMemories/extractMemories.ts",
+          "line": 537,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/memdir/paths.ts",
+          "line": 70,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_pebble_leaf_prune",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/sessionStorage.ts",
+          "line": 3731,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_penguins_off",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/fastMode.ts",
+          "line": 77,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_pewter_ledger",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/planModeV2.ts",
+          "line": 89,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_pid_based_version_locking",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/nativeInstaller/pidLock.ts",
+          "line": 45,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_plan_mode_interview_phase",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/planModeV2.ts",
+          "line": 58,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_plugin_official_mkt_git_fallback",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/plugins/marketplaceManager.ts",
+          "line": 2324,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        },
+        {
+          "file": "src/utils/plugins/marketplaceManager.ts",
+          "line": 2447,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        },
+        {
+          "file": "src/utils/plugins/officialMarketplaceStartupCheck.ts",
+          "line": 255,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_plum_vx3",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/WebSearchTool/WebSearchTool.ts",
+          "line": 262,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_post_compact_survey",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/FeedbackSurvey/usePostCompactSurvey.tsx",
+          "line": 83,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_prompt_cache_1h_config",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/api/claude.ts",
+          "line": 420,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_quartz_lantern",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/FileWriteTool/FileWriteTool.ts",
+          "line": 347,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/tools/FileEditTool/FileEditTool.ts",
+          "line": 548,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_quiet_fern",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/vscodeSdkMcp.ts",
+          "line": 91,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_read_dedup_killswitch",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/FileReadTool/FileReadTool.ts",
+          "line": 536,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_remote_backend",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/main.tsx",
+          "line": 3414,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_review_bughunter_config",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/commands/review/ultrareviewEnabled.ts",
+          "line": 9,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        },
+        {
+          "file": "src/commands/review/reviewRemote.ts",
+          "line": 177,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_sage_compass",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/advisor.ts",
+          "line": 54,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_sandbox_disabled_commands",
+      "defaults": [
+        {
+          "value": {
+            "commands": [],
+            "substrings": []
+          },
+          "raw": "{ commands: [], substrings: [] }"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/BashTool/shouldUseSandbox.ts",
+          "line": 24,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{ commands: [], substrings: [] }"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "commands": [],
+        "substrings": []
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_satin_quoll",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/toolResultStorage.ts",
+          "line": 65,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        },
+        {
+          "file": "src/utils/mcpValidation.ts",
+          "line": 34,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_scratch",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/coordinator/coordinatorMode.ts",
+          "line": 26,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/permissions/filesystem.ts",
+          "line": 299,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_sedge_lantern",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/hooks/useAwaySummary.ts",
+          "line": 48,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_session_memory",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/SessionMemory/sessionMemory.ts",
+          "line": 81,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/services/compact/sessionMemoryCompact.ts",
+          "line": 412,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_sessions_elevated_auth_enforcement",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/bridge/trustedDevice.ts",
+          "line": 36,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/bridge/trustedDevice.ts",
+          "line": 103,
+          "fn": "checkGate_CACHED_OR_BLOCKING",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_slate_heron",
+      "defaults": [
+        {
+          "value": {
+            "enabled": false,
+            "gapThresholdMinutes": 60,
+            "keepRecent": 5
+          },
+          "raw": "TIME_BASED_MC_CONFIG_DEFAULTS"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/compact/timeBasedMCConfig.ts",
+          "line": 59,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "TIME_BASED_MC_CONFIG_DEFAULTS"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "enabled": false,
+        "gapThresholdMinutes": 60,
+        "keepRecent": 5
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_slate_prism",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        },
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/cli/print.ts",
+          "line": 2906,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        },
+        {
+          "file": "src/utils/betas.ts",
+          "line": 295,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": true
+    },
+    {
+      "key": "tengu_slate_thimble",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/memdir/paths.ts",
+          "line": 75,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_slim_subagent_claudemd",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/tools/AgentTool/runAgent.ts",
+          "line": 393,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_sm_compact",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/compact/sessionMemoryCompact.ts",
+          "line": 416,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_sm_compact_config",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/compact/sessionMemoryCompact.ts",
+          "line": 109,
+          "fn": "getDynamicConfig_BLOCKS_ON_INIT",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_sm_config",
+      "defaults": [
+        {
+          "value": {},
+          "raw": "{}"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/SessionMemory/sessionMemory.ts",
+          "line": 89,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "{}"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {},
+      "conflict": false
+    },
+    {
+      "key": "tengu_strap_foyer",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/settingsSync/index.ts",
+          "line": 163,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_streaming_tool_execution2",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/query/config.ts",
+          "line": 33,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_surreal_dali",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/skills/bundled/scheduleRemoteAgents.ts",
+          "line": 333,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/tools/RemoteTriggerTool/RemoteTriggerTool.ts",
+          "line": 59,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_terminal_panel",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/hooks/useGlobalKeybindings.tsx",
+          "line": 212,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/components/PromptInput/PromptInputHelpMenu.tsx",
+          "line": 132,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_terminal_sidebar",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/screens/REPL.tsx",
+          "line": 1173,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/components/Settings/Config.tsx",
+          "line": 458,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_tern_alloy",
+      "defaults": [
+        {
+          "value": "off",
+          "raw": "'off'"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/tips/tipRegistry.ts",
+          "line": 549,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        },
+        {
+          "file": "src/services/tips/tipRegistry.ts",
+          "line": 560,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        }
+      ],
+      "valueType": "string",
+      "defaultValue": "off",
+      "conflict": false
+    },
+    {
+      "key": "tengu_thinkback",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/commands/thinkback-play/index.ts",
+          "line": 11,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/commands/thinkback/index.ts",
+          "line": 9,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_tide_elm",
+      "defaults": [
+        {
+          "value": "off",
+          "raw": "'off'"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/tips/tipRegistry.ts",
+          "line": 520,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        },
+        {
+          "file": "src/services/tips/tipRegistry.ts",
+          "line": 538,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        }
+      ],
+      "valueType": "string",
+      "defaultValue": "off",
+      "conflict": false
+    },
+    {
+      "key": "tengu_timber_lark",
+      "defaults": [
+        {
+          "value": "off",
+          "raw": "'off'"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/tips/tipRegistry.ts",
+          "line": 571,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        },
+        {
+          "file": "src/services/tips/tipRegistry.ts",
+          "line": 583,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        }
+      ],
+      "valueType": "string",
+      "defaultValue": "off",
+      "conflict": false
+    },
+    {
+      "key": "tengu_tool_pear",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/betas.ts",
+          "line": 320,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/api.ts",
+          "line": 155,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_tool_search_unsupported_models",
+      "defaults": [
+        {
+          "value": null,
+          "raw": "null"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/toolSearch.ts",
+          "line": 213,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "null"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": null,
+      "conflict": false
+    },
+    {
+      "key": "tengu_toolref_defer_j8m",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/messages.ts",
+          "line": 2160,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        },
+        {
+          "file": "src/utils/messages.ts",
+          "line": 2301,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_trace_lantern",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/telemetry/betaSessionTracing.ts",
+          "line": 93,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_turtle_carbon",
+      "defaults": [
+        {
+          "value": true,
+          "raw": "true"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/thinking.ts",
+          "line": 23,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "true"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": true,
+      "conflict": false
+    },
+    {
+      "key": "tengu_version_config",
+      "defaults": [
+        {
+          "value": {
+            "minVersion": "0.0.0"
+          },
+          "raw": "{ minVersion: '0.0.0' }"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/utils/autoUpdater.ts",
+          "line": 76,
+          "fn": "getDynamicConfig_BLOCKS_ON_INIT",
+          "defaultRaw": "{ minVersion: '0.0.0' }"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "minVersion": "0.0.0"
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu_vscode_cc_auth",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/vscodeSdkMcp.ts",
+          "line": 96,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_vscode_onboarding",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/vscodeSdkMcp.ts",
+          "line": 87,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_vscode_review_upsell",
+      "defaults": [
+        {
+          "value": false,
+          "raw": "false"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/mcp/vscodeSdkMcp.ts",
+          "line": 84,
+          "fn": "checkStatsigFeatureGate_CACHED_MAY_BE_STALE",
+          "defaultRaw": "false"
+        }
+      ],
+      "valueType": "boolean",
+      "defaultValue": false,
+      "conflict": false
+    },
+    {
+      "key": "tengu_willow_mode",
+      "defaults": [
+        {
+          "value": "off",
+          "raw": "'off'"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/screens/REPL.tsx",
+          "line": 3293,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        },
+        {
+          "file": "src/screens/REPL.tsx",
+          "line": 3949,
+          "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+          "defaultRaw": "'off'"
+        }
+      ],
+      "valueType": "string",
+      "defaultValue": "off",
+      "conflict": false
+    },
+    {
+      "key": "tengu-off-switch",
+      "defaults": [
+        {
+          "value": {
+            "activated": false
+          },
+          "raw": "{\n          activated: false,\n        }"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/services/api/claude.ts",
+          "line": 1036,
+          "fn": "getDynamicConfig_BLOCKS_ON_INIT",
+          "defaultRaw": "{\n          activated: false,\n        }"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "activated": false
+      },
+      "conflict": false
+    },
+    {
+      "key": "tengu-top-of-feed-tip",
+      "defaults": [
+        {
+          "value": {
+            "tip": "",
+            "color": "dim"
+          },
+          "raw": "DEFAULT_TIP"
+        }
+      ],
+      "calls": [
+        {
+          "file": "src/components/LogoV2/EmergencyTip.tsx",
+          "line": 56,
+          "fn": "getDynamicConfig_CACHED_MAY_BE_STALE",
+          "defaultRaw": "DEFAULT_TIP"
+        }
+      ],
+      "valueType": "json",
+      "defaultValue": {
+        "tip": "",
+        "color": "dim"
+      },
+      "conflict": false
+    }
+  ],
+  "unresolved": [
+    {
+      "file": "src/bridge/pollConfig.ts",
+      "line": 103,
+      "fn": "getFeatureValue_CACHED_WITH_REFRESH",
+      "key": "tengu_bridge_poll_interval_config",
+      "defaultRaw": "DEFAULT_POLL_CONFIG"
+    },
+    {
+      "file": "src/commands/ultraplan.tsx",
+      "line": 33,
+      "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+      "key": "tengu_ultraplan_model",
+      "defaultRaw": "ALL_MODEL_CONFIGS.opus46.firstParty"
+    },
+    {
+      "file": "src/hooks/useDynamicConfig.ts",
+      "line": 16,
+      "fn": "getDynamicConfig_BLOCKS_ON_INIT",
+      "arg": "configName"
+    },
+    {
+      "file": "src/services/analytics/growthbook.ts",
+      "line": 727,
+      "fn": "getFeatureValueInternal",
+      "arg": "feature"
+    },
+    {
+      "file": "src/services/analytics/growthbook.ts",
+      "line": 808,
+      "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+      "arg": "feature"
+    },
+    {
+      "file": "src/services/analytics/growthbook.ts",
+      "line": 954,
+      "fn": "getFeatureValueInternal",
+      "arg": "gate"
+    },
+    {
+      "file": "src/services/analytics/growthbook.ts",
+      "line": 1160,
+      "fn": "getFeatureValue_DEPRECATED",
+      "arg": "configName"
+    },
+    {
+      "file": "src/services/analytics/growthbook.ts",
+      "line": 1174,
+      "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+      "arg": "configName"
+    },
+    {
+      "file": "src/utils/cronJitterConfig.ts",
+      "line": 68,
+      "fn": "getFeatureValue_CACHED_WITH_REFRESH",
+      "key": "tengu_kairos_cron_config",
+      "defaultRaw": "DEFAULT_CRON_JITTER_CONFIG"
+    },
+    {
+      "file": "src/utils/permissions/permissionSetup.ts",
+      "line": 1347,
+      "fn": "getFeatureValue_CACHED_MAY_BE_STALE",
+      "key": "tengu_auto_mode_config",
+      "defaultRaw": "NO_CACHED_AUTO_MODE_CONFIG"
+    }
+  ]
+}

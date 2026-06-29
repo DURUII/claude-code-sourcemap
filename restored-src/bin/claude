@@ -14,6 +14,17 @@ export CALLER_DIR="${CALLER_DIR:-$(pwd -W 2>/dev/null || pwd)}"
 # explicitly when you want to debug against a different config root.
 export CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$ROOT_DIR/.claude}"
 
+# Restoration shim: force ripgrep into 'system' mode. The default 'builtin'
+# path (src/utils/ripgrep.ts) looks for a vendored <arch>-<platform>/rg next
+# to the source, but the restored tree is source-only — those platform
+# binaries are npm optionalDependencies that cannot be reconstructed from
+# the sourcemap. The 'embedded' path (Bun.embeddedFiles dispatch via argv0)
+# is also unreachable here because this shim runs `bun` against the source
+# rather than the Bun-compiled standalone binary, so isInBundledMode() is
+# false. Falling back to the system rg on PATH is the cleanest fix; set
+# USE_BUILTIN_RIPGREP=1 to override and reproduce the original failure.
+export USE_BUILTIN_RIPGREP="${USE_BUILTIN_RIPGREP:-0}"
+
 # Optional machine-local env. This file is ignored and is the right place for
 # private hostnames, SDK keys, passwords, and homelab/cloud endpoints.
 if [ -f "$ROOT_DIR/.claude/telemetry.env" ]; then
@@ -51,6 +62,8 @@ if [ "${CLAUDE_RESTORED_TELEMETRY:-0}" = "1" ]; then
   if [ -t 2 ] && [ "${CLAUDE_RESTORED_TELEMETRY_BANNER:-1}" != "0" ]; then
     {
       echo "[claude telemetry] OTLP: ${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      echo "[claude telemetry] Kibana: ${CLAUDE_RESTORED_KIBANA_URL:-http://127.0.0.1:5601}"
+      echo "[claude telemetry] Elasticsearch: ${CLAUDE_RESTORED_ELASTICSEARCH_URL:-http://127.0.0.1:9200}"
       echo "[claude telemetry] Grafana: ${CLAUDE_RESTORED_GRAFANA_URL:-http://127.0.0.1:3001}"
       echo "[claude telemetry] GrowthBook: ${CLAUDE_RESTORED_GROWTHBOOK_URL:-http://127.0.0.1:3000}"
       if [ -z "${CLAUDE_CODE_GB_CLIENT_KEY:-}" ]; then

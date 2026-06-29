@@ -77,7 +77,7 @@ tags:
 | 本地 headless profile | `-p` 模式 per-turn TTFT、TTFT 之前的 query overhead | `CLAUDE_CODE_PROFILE_STARTUP=1`（与 startup profile 复用同一 env，但守卫在 `getIsNonInteractiveSession()`） | `src/utils/headlessProfiler.ts`, `src/query.ts`, `src/QueryEngine.ts` |
 | 本地 trace | API、tool、blocked-on-user 如何串起来 | `CLAUDE_CODE_PERFETTO_TRACE=1` 或路径 | `src/utils/telemetry/perfettoTracing.ts`, `src/utils/telemetry/sessionTracing.ts` |
 | 本地 API 请求观察 | 这次真实发给 Claude API 的 payload 是什么 | `CLAUDE_CODE_HTTP_VISUALIZER_ENDPOINT=...` | `src/services/api/apiRequestObserver.ts`, `../lab/http-visualizer` |
-| 标准遥测 | 接 Grafana/Tempo/Loki/Prometheus 等长期观测栈 | `CLAUDE_CODE_ENABLE_TELEMETRY=1` + `OTEL_*` | `src/utils/telemetry/instrumentation.ts` |
+| 标准遥测 | 接 Kibana/Elasticsearch + Grafana/Tempo/Loki/Prometheus 等长期观测栈 | `CLAUDE_CODE_ENABLE_TELEMETRY=1` + `OTEL_*` | `src/utils/telemetry/instrumentation.ts` |
 | 产品遥测/配置 | 产品事件、采样、实验、feature flag | `logEvent()` / GrowthBook | `src/services/analytics/*`, `src/services/analytics/growthbook.ts` |
 
 三个 profile 模块共用 `src/utils/profilerBase.ts`：同一个 `perf_hooks.performance` 时间轴（进程级 singleton）、同一行格式 `[+total.ms] (+delta.ms) name [| RSS, Heap]`，但各自维护独立的 mark 命名空间（`headless_` 前缀避免冲突）。
@@ -107,7 +107,7 @@ bun ./src/entrypoints/cli.tsx "$@"
 - `CLAUDE_CODE_OTEL_SHUTDOWN_TIMEOUT_MS=5000`
 - `CLAUDE_CODE_PERFETTO_TRACE=1`、`CLAUDE_CODE_PERFETTO_WRITE_INTERVAL_S=5`
 - `NO_PROXY` / `no_proxy` 自动追加 `localhost,127.0.0.1`
-- stderr 是 TTY 且 `CLAUDE_RESTORED_TELEMETRY_BANNER` 不为 0 时，打印 7 行 banner（OTLP / Grafana / GrowthBook / Prometheus / Tempo / Perfetto 的 URL）
+- stderr 是 TTY 且 `CLAUDE_RESTORED_TELEMETRY_BANNER` 不为 0 时，打印 banner（OTLP / Kibana / Elasticsearch / Grafana / GrowthBook / Prometheus / Tempo / Perfetto 的 URL）
 
 关键边界：
 
@@ -209,7 +209,7 @@ OTEL_LOG_TOOL_CONTENT=1
 
 如果把这些变量放进自己的本地 runtime env，再通过 `./bin/claude` 启动，OTLP 后端会收到 prompt、tool 参数和 tool 输出。远端部署时要把 OTLP backend 当作敏感数据系统处理。
 
-实现入口是 `src/utils/telemetry/instrumentation.ts`；Docker Compose、Grafana、Tempo、Loki、Prometheus、GrowthBook 的完整 runbook 见 `deploy/telemetry/README.md`。
+实现入口是 `src/utils/telemetry/instrumentation.ts`；Docker Compose、Kibana、Elasticsearch、Grafana、Tempo、Loki、Prometheus、GrowthBook 的完整 runbook 见 `deploy/telemetry/README.md`。
 
 ## API Request Visualizer
 

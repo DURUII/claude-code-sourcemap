@@ -1,4 +1,4 @@
-import { GrowthBook } from '@growthbook/growthbook'
+import { GrowthBook } from '@growthbook/growthbook' // 共功能配置中心｜灰度、随机抽样、多臂老虎机｜A/B 实验：拉新、留存、转化
 import { isEqual, memoize } from 'lodash-es'
 import {
   getIsNonInteractiveSession,
@@ -30,7 +30,7 @@ import {
  * Uses UUID suffix (not Uuid) to align with GrowthBook conventions.
  */
 export type GrowthBookUserAttributes = {
-  id: string
+  id: string // 稳定分组
   sessionId: string
   deviceID: string
   platform: 'win32' | 'darwin' | 'linux'
@@ -38,11 +38,11 @@ export type GrowthBookUserAttributes = {
   organizationUUID?: string
   accountUUID?: string
   userType?: string
-  subscriptionType?: string
+  subscriptionType?: string // e.g. free, pro, team, ...
   rateLimitTier?: string
-  firstTokenTime?: number
+  firstTokenTime?: number // 新老用户
   email?: string
-  appVersion?: string
+  appVersion?: string // 版本
   github?: GitHubActionsMetadata
 }
 

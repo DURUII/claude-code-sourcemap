@@ -30,4 +30,3 @@ storage:
 metrics_generator:
   storage:
     path: /var/tempo/generator/wal
-

@@ -23,6 +23,13 @@ exporters:
     resource_to_telemetry_conversion:
       enabled: true
 
+  elasticsearch:
+    endpoints: [http://elasticsearch:9200]
+    logs_index: claude-code-logs
+    traces_index: claude-code-traces
+    mapping:
+      allowed_modes: [none]
+
   otlp/tempo:
     endpoint: tempo:4317
     tls:
@@ -43,9 +50,9 @@ service:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp/loki]
+      exporters: [elasticsearch, otlphttp/loki]
 
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp/tempo]
+      exporters: [elasticsearch, otlp/tempo]
