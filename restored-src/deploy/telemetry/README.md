@@ -92,18 +92,23 @@ The ignored local file should look like:
 ```env
 CLAUDE_RESTORED_TELEMETRY=1
 OTEL_EXPORTER_OTLP_ENDPOINT=http://<host>:4318
+OTEL_LOG_USER_PROMPTS=1
+OTEL_LOG_TOOL_DETAILS=1
+OTEL_LOG_TOOL_CONTENT=1
 CLAUDE_CODE_GB_BASE_URL=http://<host>:3100
 CLAUDE_CODE_GB_CLIENT_KEY=<growthbook-sdk-client-key>
 CLAUDE_CODE_PERFETTO_TRACE=1
 ```
 
-Sensitive payloads remain opt-in:
+This example explicitly enables sensitive OTLP payloads for source-study diagnostics:
 
 ```bash
 OTEL_LOG_USER_PROMPTS=1
 OTEL_LOG_TOOL_DETAILS=1
 OTEL_LOG_TOOL_CONTENT=1
 ```
+
+Unset those variables, or set them to `0`, when the telemetry backend should not receive prompt text, tool parameters, or tool output/content.
 
 ## HTTP Request Visualizer
 
