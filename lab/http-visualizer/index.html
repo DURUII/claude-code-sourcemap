@@ -9,51 +9,30 @@
   </head>
   <body>
     <main class="shell">
-      <aside class="rail">
-        <button id="rail-toggle" class="rail-toggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar">‹</button>
-        <div class="rail-collapsed-label">Scope</div>
-        <div class="brand">
-          <div class="brand-top">
-            <div>
-              <div class="brand-kicker">runtime scope</div>
-              <h1>Claude Code Scope</h1>
-            </div>
-            <div class="status-pill">
-              <span id="connection-dot" class="dot"></span>
-              <span id="connection-label">Connecting</span>
-            </div>
-          </div>
-          <div class="brand-actions">
-            <button id="copy-env" type="button">Connect CLI</button>
-            <span class="brand-hint">append-only request ledger</span>
-          </div>
-          <div class="handle-summary" id="handle-summary">No handle selected</div>
-        </div>
-        <div class="event-list" id="event-list"></div>
-      </aside>
-
       <section class="workspace">
-        <header class="topbar">
-          <div>
-            <div class="eyebrow">Runtime Payload</div>
-            <h2 id="request-title">Waiting for ./bin/claude</h2>
-          </div>
-          <div class="actions">
-            <button id="clear-events" type="button">Clear</button>
+        <header class="app-chrome">
+          <nav class="session-tabs" id="session-tabs"></nav>
+          <div class="app-actions">
+            <button id="export-events" class="icon-button" type="button" aria-label="Export events" title="Export events">↓</button>
+            <button id="clear-events" class="icon-button" type="button" aria-label="Clear events" title="Clear events">×</button>
           </div>
         </header>
 
-        <section class="overview-grid" id="overview-grid"></section>
-
-        <nav class="tabs" id="tabs">
-          <button class="tab active" data-tab="system">System <span id="count-system">0</span></button>
-          <button class="tab" data-tab="messages">Messages <span id="count-messages">0</span></button>
-          <button class="tab" data-tab="tools">Tools <span id="count-tools">0</span></button>
-          <button class="tab" data-tab="output">Output</button>
-          <button class="tab" data-tab="delta">Delta</button>
-          <button class="tab" data-tab="transport">Transport</button>
-          <button class="tab" data-tab="raw">Raw JSON</button>
-        </nav>
+        <div class="view-toolbar">
+          <nav class="view-tabs" aria-label="Payload views">
+            <button id="view-system" class="view-tab active" type="button" data-view="system" aria-selected="true">System</button>
+            <button id="view-messages" class="view-tab" type="button" data-view="messages" aria-selected="false">Messages</button>
+            <button id="view-tools" class="view-tab" type="button" data-view="tools" aria-selected="false">Tools</button>
+            <button id="view-raw" class="view-tab" type="button" data-view="raw" aria-selected="false">Request JSON</button>
+            <button id="view-output" class="view-tab" type="button" data-view="output" aria-selected="false">Output</button>
+            <button id="view-delta" class="view-tab" type="button" data-view="delta" aria-selected="false">Delta</button>
+            <button id="view-transport" class="view-tab" type="button" data-view="transport" aria-selected="false">Transport</button>
+          </nav>
+          <input id="panel-search" class="panel-search" type="search" placeholder="Search current view" />
+          <span id="search-count" class="search-count">0/0</span>
+          <button id="previous-match" class="nav-button" type="button" title="Previous match">‹</button>
+          <button id="next-match" class="nav-button" type="button" title="Next match">›</button>
+        </div>
 
         <section class="panel active" id="panel-system"></section>
         <section class="panel" id="panel-messages"></section>
