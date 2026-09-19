@@ -9,7 +9,8 @@ node_modules
 /restored-src/writings
 /restored-src/TS Learn
 /restored-src/dotclaude-analysis
-/restored-src/.claude
+/restored-src/.claude/*
+!/restored-src/.claude/telemetry.env.example
 /html
 restored-src/src/tools/.DS_Store
 /restored-src/src/tools/SkillTool/demo
@@ -44,4 +45,6 @@ tool_data.json
 /html
 /open-codex-desktop
 /restored-src/node_modules
+/.npm-cache-local/
+/restored-src/.npm-cache-local/
 /html
