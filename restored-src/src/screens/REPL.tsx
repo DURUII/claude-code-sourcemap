@@ -2790,6 +2790,7 @@ export function REPL({
     resetTurnHookDuration();
     resetTurnToolDuration();
     resetTurnClassifierDuration();
+    // 生产者和消费者速度失配：丢弃、缓冲、背压
     for await (const event of query({
       messages: messagesIncludingNewMessages,
       systemPrompt,

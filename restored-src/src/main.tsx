@@ -13,6 +13,7 @@ profileCheckpoint('main_tsx_entry');
 import { startMdmRawRead } from './utils/settings/mdm/rawRead.js';
 
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
+// Managed Preferences 比如 https://www.jamf.com/，
 startMdmRawRead();
 import { ensureKeychainPrefetchCompleted, startKeychainPrefetch } from './utils/secureStorage/keychainPrefetch.js';
 
@@ -20,7 +21,7 @@ import { ensureKeychainPrefetchCompleted, startKeychainPrefetch } from './utils/
 startKeychainPrefetch();
 import { feature } from 'bun:bundle';
 import { Command as CommanderCommand, InvalidArgumentError, Option } from '@commander-js/extra-typings';
-import chalk from 'chalk';
+import chalk from 'chalk'; // 终端美化
 import { readFileSync } from 'fs';
 import mapValues from 'lodash-es/mapValues.js';
 import pickBy from 'lodash-es/pickBy.js';
@@ -28,7 +29,7 @@ import uniqBy from 'lodash-es/uniqBy.js';
 import React from 'react';
 import { getOauthConfig } from './constants/oauth.js';
 import { getRemoteSessionUrl } from './constants/product.js';
-import { getSystemContext, getUserContext } from './context.js';
+import { getSystemContext, getUserContext } from './context.js'; // getUserContext 需要 enableConfigs
 import { init, initializeTelemetryAfterTrust } from './entrypoints/init.js';
 import { addToHistory } from './history.js';
 import type { Root } from './ink.js';
@@ -3131,6 +3132,7 @@ async function run(): Promise<CommanderCommand> {
           resume_duration_ms: Math.round(performance.now() - resumeStart)
         });
         resumeSucceeded = true;
+        // 交互式
         await launchRepl(root, {
           getFpsMetrics,
           stats,
