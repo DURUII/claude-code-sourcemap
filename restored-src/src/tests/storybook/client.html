@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ink component gallery</title>
+    <!--
+      Inline rather than served: the server has no /favicon.ico route, and an
+      explicit icon link is what stops the browser from asking for one. Chrome
+      skips its default request when a rel=icon is present, so this removes the
+      last 404 in the console without adding a route for a single 16px image.
+      The prompt chevron is the same glyph the Ink Select draws for the focused
+      row, so the tab is recognisable next to the grid it belongs to.
+    -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%223%22%20fill%3D%22%231b1b1f%22%2F%3E%3Cpath%20d%3D%22M4.4%205.4%206.9%208l-2.5%202.6%22%20fill%3D%22none%22%20stroke%3D%22%237ee787%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Crect%20x%3D%228.6%22%20y%3D%2210%22%20width%3D%223.6%22%20height%3D%221.6%22%20rx%3D%220.5%22%20fill%3D%22%237ee787%22%2F%3E%3C%2Fsvg%3E"
+    />
+    <!--
+      A terminal screen, not a web page: the grid is monospace, rows do not wrap,
+      and every cell is positioned by column. The default foreground and canvas
+      come from the app's own dark theme (src/utils/theme.ts:453 text = white,
+      :454 inverseText = black), because cells the theme leaves uncoloured inherit
+      the terminal's defaults. The canvas is near-black to match the dark theme
+      the dialogs are designed against.
+    -->
+    <style>
+      :root {
+        --term-fg: rgb(255, 255, 255);
+        --term-bg: #0c0c0c;
+        --term-inverse-fg: rgb(0, 0, 0);
+        --chrome-bg: #16181d;
+        --chrome-fg: #c9d1d9;
+        --chrome-dim: #7d8590;
+        --accent: rgb(177, 185, 249);
+        --warn: rgb(255, 193, 7);
+        --error: rgb(255, 107, 128);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        background: var(--chrome-bg);
+        color: var(--chrome-fg);
+        font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      /* Left rail: the story list */
+      #rail {
+        width: 280px;
+        flex: 0 0 280px;
+        overflow-y: auto;
+        padding: 12px 8px;
+        border-right: 1px solid #2a2d34;
+      }
+      #rail h1 {
+        font-size: 13px;
+        margin: 0 6px 12px;
+        color: var(--chrome-dim);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .group-title {
+        margin: 14px 6px 4px;
+        font-size: 11px;
+        color: var(--chrome-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .story {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: 0;
+        border-radius: 6px;
+        color: var(--chrome-fg);
+        padding: 6px 8px;
+        cursor: pointer;
+        font: inherit;
+      }
+      .story:hover { background: #22252b; }
+      .story[aria-current="true"] { background: #2b3038; color: #fff; }
+      .story .launcher {
+        display: block;
+        color: var(--chrome-dim);
+        font-size: 11px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 0 5px;
+        border-radius: 999px;
+        font-size: 10px;
+        background: #4a3a12;
+        color: var(--warn);
+      }
+
+      /* Right pane: header, toolbar, screen, log */
+      #main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+      header { padding: 12px 16px 8px; border-bottom: 1px solid #2a2d34; }
+      #title { margin: 0; font-size: 15px; }
+      #desc { margin: 4px 0 0; color: var(--chrome-dim); max-width: 90ch; }
+      #tools {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 16px;
+        border-bottom: 1px solid #2a2d34;
+        flex-wrap: wrap;
+      }
+      button.action {
+        background: #262a31;
+        color: var(--chrome-fg);
+        border: 1px solid #333842;
+        border-radius: 5px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font: inherit;
+      }
+      button.action:hover { background: #30353e; }
+      #status { color: var(--chrome-dim); }
+      #status.ready { color: rgb(78, 186, 101); }
+      #status.failed, #status.exited { color: var(--error); }
+      #stats {
+        margin-left: auto;
+        color: var(--chrome-dim);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+      }
+
+      /* The terminal screen */
+      #screen {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        background: var(--term-bg);
+        padding: 8px;
+        outline: none;
+      }
+      #grid {
+        position: relative;
+        color: var(--term-fg);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        /* Fixed line-height so a row's height in px is exact, which is what makes
+           the measured row count match what the worker renders. */
+        line-height: 17px;
+        font-size: 13px;
+        font-variant-ligatures: none;
+      }
+      .row { position: relative; height: 17px; white-space: pre; }
+      /* Runs are positioned by column rather than flowed, so a run that starts at
+         column 20 lands exactly there no matter what the font does with the
+         glyphs inside it. */
+      .run { position: absolute; top: 0; left: 0; }
+      .run a { color: inherit; text-decoration: underline; }
+
+      /* Log pane */
+      #logwrap {
+        height: 190px;
+        flex: 0 0 190px;
+        border-top: 1px solid #2a2d34;
+        overflow-y: auto;
+        padding: 6px 16px 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+      }
+      #logwrap .line { white-space: pre-wrap; word-break: break-word; }
+      #logwrap .warn { color: var(--warn); }
+      #logwrap .error { color: var(--error); }
+      #logwrap .status { color: var(--accent); }
+      #logwrap .empty { color: var(--chrome-dim); }
+
+      #banner {
+        display: none;
+        padding: 8px 16px;
+        background: #4a1e26;
+        color: #ffd7de;
+        align-items: center;
+        gap: 10px;
+      }
+      #banner.shown { display: flex; }
+    </style>
+  </head>
+  <body>
+    <nav id="rail"><h1>Stories</h1><div id="stories"></div></nav>
+
+    <div id="main">
+      <header>
+        <h2 id="title">Loading…</h2>
+        <p id="desc"></p>
+      </header>
+
+      <div id="tools">
+        <button class="action" id="restart" title="Kill the worker and mount a fresh one">Restart</button>
+        <button class="action" id="repaint" title="Ask the worker to resend the current frame">Repaint</button>
+        <span id="status">connecting…</span>
+        <span id="stats"></span>
+      </div>
+
+      <div id="banner">
+        <span id="banner-text"></span>
+        <button class="action" id="reconnect">Reconnect</button>
+      </div>
+
+      <div id="screen" tabindex="0">
+        <div id="grid"></div>
+      </div>
+
+      <div id="logwrap"><div class="line empty" id="log-empty">No output yet.</div></div>
+    </div>
+
+    <script type="module" src="/client.js"></script>
+  </body>
+</html>
