@@ -8,8 +8,8 @@
  * sensitive to the real `~/.claude` for no reason.
  *
  * Behaviour lives in `stories/<module>.tsx`, which the worker imports by name.
- * Every entry names the launcher it covers so the gallery stays traceable back
- * to `src/dialogLaunchers.tsx`.
+ * Dialog entries name their launcher in `src/dialogLaunchers.tsx`; tool entries
+ * name the Tool UI callback family they exercise.
  */
 
 /** How a story's screen is produced. */
@@ -21,7 +21,8 @@ export type StoryMeta = {
   /** Picker group, e.g. "Settings". */
   group: string;
   /**
-   * The launcher in src/dialogLaunchers.tsx this story is *about*.
+   * For dialog stories, the launcher in src/dialogLaunchers.tsx this story is
+   * about. Tool stories use `Tool.render*` to identify their callback family.
    *
    * A story mounts that launcher's target component directly and supplies its
    * own props; no story calls the launcher. That is a real limitation, not a
@@ -78,6 +79,39 @@ export type StoryMeta = {
 };
 
 export const STORIES: StoryMeta[] = [
+  ...[
+    'Agent', 'TaskOutput', 'Bash', 'Glob', 'Grep', 'ExitPlanMode',
+    'Read', 'Edit', 'Write', 'NotebookEdit', 'WebFetch', 'TodoWrite',
+    'WebSearch', 'TaskStop', 'AskUserQuestion', 'Skill', 'EnterPlanMode',
+    'EnterWorktree', 'ExitWorktree', 'SendMessage', 'SendUserMessage',
+    'ListMcpResourcesTool', 'ReadMcpResourceTool',
+  ].map((name): StoryMeta => ({
+    name: `tool-ui-${name.toLowerCase()}`,
+    title: `${name}: UI functions`,
+    description: `Calls the real ${name} UI functions with labelled sample input and output. No tool is executed.`,
+    group: 'Tool UI',
+    launcher: 'Tool.render*',
+    columns: 110,
+    rows: 42,
+    module: 'tool-ui',
+    variant: name,
+  })),
+  ...[
+    ['agent-output', 'Read: agent output tag'],
+    ['image', 'Read: image result'],
+    ['pdf', 'Read: PDF result'],
+    ['unchanged', 'Read: unchanged file'],
+  ].map(([variant, title]): StoryMeta => ({
+    name: `tool-ui-read-${variant}`,
+    title,
+    description: 'Another real Read UI callback branch, rendered with sample data and no file access.',
+    group: 'Tool UI',
+    launcher: 'Tool.render*',
+    columns: 110,
+    rows: 36,
+    module: 'tool-ui',
+    variant: `Read:${variant}`,
+  })),
   {
     name: 'invalid-settings',
     title: 'Invalid Settings (2 errors)',
