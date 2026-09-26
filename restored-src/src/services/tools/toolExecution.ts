@@ -333,7 +333,7 @@ function getMcpServerBaseUrlFromToolName(
   }
   return getLoggingSafeMcpBaseUrl(serverConnection.config)
 }
-
+// 执行路径：queryLoop -> runTools -> runToolUse -> streamedCheckPermissionsAndCallTool -> checkPermissionsAndCallTool -> await tool.call(...)
 export async function* runToolUse(
   toolUse: ToolUseBlock,
   assistantMessage: AssistantMessage,

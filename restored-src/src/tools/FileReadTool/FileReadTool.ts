@@ -83,7 +83,7 @@ import {
   OFFSET_INSTRUCTION_DEFAULT,
   OFFSET_INSTRUCTION_TARGETED,
   renderPromptTemplate,
-} from './prompt.js'
+} from './prompt.js' // 指示
 import {
   getToolUseSummary,
   renderToolResultMessage,
@@ -344,6 +344,7 @@ export const FileReadTool = buildTool({
   async description() {
     return DESCRIPTION
   },
+  // 提示词
   async prompt() {
     const limits = getDefaultFileReadingLimits()
     const maxSizeInstruction = limits.includeMaxSizeInPrompt
@@ -395,6 +396,7 @@ export const FileReadTool = buildTool({
   async preparePermissionMatcher({ file_path }) {
     return pattern => matchWildcardPattern(pattern, file_path)
   },
+  // 执行顺序：canUseTool 检查通用权限，此时是特定权限检查
   async checkPermissions(input, context): Promise<PermissionDecision> {
     const appState = context.getAppState()
     return checkReadPermissionForTool(
@@ -415,6 +417,7 @@ export const FileReadTool = buildTool({
     return ''
   },
   renderToolUseErrorMessage,
+  // 检查输入和参数合法性
   async validateInput({ file_path, pages }, toolUseContext: ToolUseContext) {
     // Validate pages parameter (pure string parsing, no I/O)
     if (pages !== undefined) {
@@ -649,6 +652,7 @@ export const FileReadTool = buildTool({
       throw error
     }
   },
+  // 内部
   mapToolResultToToolResultBlockParam(data, toolUseID) {
     switch (data.type) {
       case 'image': {

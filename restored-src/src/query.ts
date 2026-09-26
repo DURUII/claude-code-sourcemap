@@ -240,6 +240,7 @@ export async function* query(
   Terminal
 > {
   const consumedCommandUuids: string[] = []
+  // 依次 yield，可以理解为逐 inner.next() yield 直到 done
   const terminal = yield* queryLoop(params, consumedCommandUuids)
   // Only reached if queryLoop returned normally. Skipped on throw (error
   // propagates through yield*) and on .return() (Return completion closes
@@ -260,7 +261,7 @@ async function* queryLoop(
   | Message
   | TombstoneMessage
   | ToolUseSummaryMessage,
-  Terminal
+  Terminal // 结束
 > {
   // Immutable params — never reassigned during the query loop.
   const {
@@ -895,13 +896,13 @@ async function* queryLoop(
             }
             if (message.type === 'assistant') {
               assistantMessages.push(message)
-
+              // 工具
               const msgToolUseBlocks = message.message.content.filter(
                 content => content.type === 'tool_use',
               ) as ToolUseBlock[]
               if (msgToolUseBlocks.length > 0) {
                 toolUseBlocks.push(...msgToolUseBlocks)
-                needsFollowUp = true // 有 tool_use，说明循环还没结束
+                needsFollowUp = true // 有 tool_use，那么说明循环还没结束
               }
 
               if (
@@ -1451,7 +1452,7 @@ async function* queryLoop(
 
     const toolUpdates = streamingToolExecutor
       ? streamingToolExecutor.getRemainingResults() // 前面已经边 streaming 边启动了，等待剩下还没完成的工具
-      : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext) // 执行整批工具
+      : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext) // 非流式工具执行，执行整批工具
 
     for await (const update of toolUpdates) {
       if (update.message) {

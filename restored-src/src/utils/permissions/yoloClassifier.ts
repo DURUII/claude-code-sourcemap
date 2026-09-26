@@ -492,6 +492,8 @@ function buildClaudeMdMessage(): Anthropic.MessageParam | null {
  * Build the system prompt for the auto mode classifier.
  * Assembles the base prompt with the permissions template and substitutes
  * user allow/deny/environment values from settings.autoMode.
+ *
+ * auto-mode 的系统提示词
  */
 export async function buildYoloSystemPrompt(
   context: ToolPermissionContext,

@@ -146,15 +146,15 @@ export type QueryEngineConfig = {
   maxTurns?: number
   maxBudgetUsd?: number
   taskBudget?: { total: number }
-  jsonSchema?: Record<string, unknown>
+  jsonSchema?: Record<string, unknown> // 用于强制 structured output
   verbose?: boolean
-  replayUserMessages?: boolean
+  replayUserMessages?: boolean // 回显用户消息
   /** Handler for URL elicitations triggered by MCP tool -32042 errors. */
   handleElicitation?: ToolUseContext['handleElicitation']
-  includePartialMessages?: boolean
-  setSDKStatus?: (status: SDKStatus) => void
+  includePartialMessages?: boolean // message_start、message_delta、message_stop、usage、stop_reason
+  setSDKStatus?: (status: SDKStatus) => void // 比如，正在压缩
   abortController?: AbortController
-  orphanedPermission?: OrphanedPermission
+  orphanedPermission?: OrphanedPermission // 已经收到但突发意外未处理的权限答复
   /**
    * Snip-boundary handler: receives each yielded system message plus the
    * current mutableMessages store. Returns undefined if the message is not a
@@ -185,10 +185,10 @@ export class QueryEngine {
   private config: QueryEngineConfig
   private mutableMessages: Message[]
   private abortController: AbortController
-  private permissionDenials: SDKPermissionDenial[]
+  private permissionDenials: SDKPermissionDenial[] // 仅记录未获允许的工具调用
   private totalUsage: NonNullableUsage
   private hasHandledOrphanedPermission = false
-  private readFileState: FileStateCache
+  private readFileState: FileStateCache // 带容量上限
   // Turn-scoped skill discovery tracking (feeds was_discovered on
   // tengu_skill_tool_invocation). Must persist across the two
   // processUserInputContext rebuilds inside submitMessage, but is cleared
@@ -208,11 +208,11 @@ export class QueryEngine {
 
   async *submitMessage(
     prompt: string | ContentBlockParam[],
-    options?: { uuid?: string; isMeta?: boolean },
+    options?: { uuid?: string; isMeta?: boolean }, // 显示非 meta 消息
   ): AsyncGenerator<SDKMessage, void, unknown> {
     const {
       cwd,
-      commands,
+      commands, // skills、插件命令、workflow、内置命令等
       tools,
       mcpClients,
       verbose = false,
@@ -237,7 +237,7 @@ export class QueryEngine {
 
     this.discoveredSkillNames.clear()
     setCwd(cwd)
-    const persistSession = !isSessionPersistenceDisabled()
+    const persistSession = !isSessionPersistenceDisabled() // transcript 与恢复
     const startTime = Date.now()
 
     // Wrap canUseTool to track permission denials
@@ -425,7 +425,7 @@ export class QueryEngine {
       uuid: options?.uuid,
       isMeta: options?.isMeta,
       querySource: 'sdk',
-    })
+    }) // 可能并不需要唤起 query
 
     // Push new messages, including user input and any attachments
     this.mutableMessages.push(...messagesFromUserInput)
@@ -671,18 +671,18 @@ export class QueryEngine {
     const initialStructuredOutputCalls = jsonSchema
       ? countToolCalls(this.mutableMessages, SYNTHETIC_OUTPUT_TOOL_NAME)
       : 0
-
+    // query 是一个 async generator，指执行一次用户请求（执行工具）的回答循环
     for await (const message of query({
-      messages,
-      systemPrompt,
-      userContext,
-      systemContext,
-      canUseTool: wrappedCanUseTool,
-      toolUseContext: processUserInputContext,
+      messages, // 一份消息「历史」
+      systemPrompt, // 系统提示词
+      userContext, // 日期、CLAUDE.md
+      systemContext, // Git 信息等
+      canUseTool: wrappedCanUseTool, // 权限决策 + wrap
+      toolUseContext: processUserInputContext, // 消息「视图」、工具列表、级联取消控制、最新权限模式、后台任务、正在运行工具、已读文件版本记录缓存和修改文件前保存备份和快照（如起点、范围、修改时间）、通知/进度回调函数 ...
       fallbackModel,
-      querySource: 'sdk',
-      maxTurns,
-      taskBudget,
+      querySource: 'sdk', // 标签
+      maxTurns, // 最大轮次
+      taskBudget, // 预算
     })) {
       // Record assistant, user, and compact boundary messages
       if (

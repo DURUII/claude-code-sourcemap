@@ -350,6 +350,7 @@ export function toolMatchesName(
   tool: { name: string; aliases?: string[] },
   name: string,
 ): boolean {
+  // 按 name 或 alias 匹配，例如，TaskStop/KillShell
   return tool.name === name || (tool.aliases?.includes(name) ?? false)
 }
 
