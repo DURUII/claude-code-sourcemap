@@ -1,4 +1,5 @@
 {
+  "bun.runtime": "/Users/durui/.bun/bin/bun",
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
   "typescript.preferences.importModuleSpecifier": "relative",
   "deno.enable": false,

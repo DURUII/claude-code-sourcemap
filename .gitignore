@@ -45,6 +45,11 @@ tool_data.json
 /html
 /open-codex-desktop
 /restored-src/node_modules
-/.npm-cache-local/
-/restored-src/.npm-cache-local/
+# Unanchored on purpose: npm has dropped a local cache dir in the root and in
+# restored-src, and now in lab/laminar-relay. An anchored pattern needs a new
+# line for every directory a tool happens to be run from.
+.npm-cache-local/
 /html
+/.agents/skills
+/.claude/skills
+/.lmnr

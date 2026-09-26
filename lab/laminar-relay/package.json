@@ -1,0 +1,13 @@
+{
+  "name": "claude-laminar-relay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun relay.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "protobufjs": "^7.6.6"
+  }
+}

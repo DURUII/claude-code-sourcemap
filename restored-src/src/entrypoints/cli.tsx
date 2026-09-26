@@ -42,6 +42,7 @@ async function main(): Promise<void> {
   }
 
   // For all other paths, load the startup profiler
+  // 需要设置 CLAUDE_CODE_PROFILE_STARTUP=1
   const {
     profileCheckpoint
   } = await import('../utils/startupProfiler.js');
@@ -50,6 +51,7 @@ async function main(): Promise<void> {
   // Fast-path for --dump-system-prompt: output the rendered system prompt and exit.
   // Used by prompt sensitivity evals to extract the system prompt at a specific commit.
   // Ant-only: eliminated from external builds via feature flag.
+  // 系统提示词
   if (feature('DUMP_SYSTEM_PROMPT') && args[0] === '--dump-system-prompt') {
     profileCheckpoint('cli_dump_system_prompt_path');
     const {
@@ -69,6 +71,7 @@ async function main(): Promise<void> {
     console.log(prompt.join('\n'));
     return;
   }
+  // 缺少原生二进制
   if (process.argv[2] === '--claude-in-chrome-mcp') {
     profileCheckpoint('cli_claude_in_chrome_mcp_path');
     const {
@@ -109,6 +112,7 @@ async function main(): Promise<void> {
   // serve local machine as bridge environment.
   // feature() must stay inline for build-time dead code elimination;
   // isBridgeEnabled() checks the runtime GrowthBook gate.
+  // 从浏览器/本机接着用本地会话
   if (feature('BRIDGE_MODE') && (args[0] === 'remote-control' || args[0] === 'rc' || args[0] === 'remote' || args[0] === 'sync' || args[0] === 'bridge')) {
     profileCheckpoint('cli_bridge_path');
     const {

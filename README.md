@@ -46,3 +46,29 @@ restored-src/src/
 - 源码版权归 [Anthropic](https://www.anthropic.com) 所有
 - 本仓库仅用于技术研究与学习，请勿用于商业用途
 - 如有侵权，请联系删除
+
+## 友情链接
+
+- https://www.swebench.com/
+- https://github.com/novasky-ai/skyrl
+- https://github.com/radixark/miles
+- https://github.com/lmnr-ai/lmnr
+- https://github.com/mlflow/mlflow
+- https://arxiv.org/abs/2411.15100
+- https://fastapi.tiangolo.com/tutorial/first-steps/#openapi
+- https://gorilla.cs.berkeley.edu/leaderboard.html
+- https://openrouter.ai/
+- https://mini-swe-agent.com/latest/
+- https://github.com/OpenHands/software-agent-sdk/blob/df2ea8fa5542d5d2a543e108bc8b2d4fbbab34b1/openhands-tools/openhands/tools/file_editor/definition.py
+- https://aider.chat/docs/more/edit-formats.html
+- https://github.com/OpenHands/software-agent-sdk/blob/df2ea8fa5542d5d2a543e108bc8b2d4fbbab34b1/openhands-tools/openhands/tools/preset/gpt5.py
+- https://github.com/anomalyco/opencode/blob/57ef3828431790c53f8f333c7ffbfe88770a1812/packages/opencode/src/tool/registry.ts
+- https://github.com/openai/codex/blob/16ff14c266179e6a762dc8081e9dab73a96683e0/codex-rs/apply-patch/src/parser.rs
+- https://github.com/NVIDIA-NeMo/ProRL-Agent-Server/tree/6a1ead6bfac054fce6c1e62d1a77b330d96c58db/src/polar/agent
+- https://playwright.dev/docs/locators
+- https://playwright.dev/docs/test-assertions
+- https://playwright.dev/docs/test-snapshots
+- https://playwright.dev/docs/test-snapshots
+- https://playwright.dev/docs/test-assertions
+- https://jykoh.com/blog/whats-the-point-of-computer-use-agents/
+- https://huggingface.co/docs/transformers/en/main_classes/tokenizer

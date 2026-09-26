@@ -101,4 +101,28 @@ fi
 
 cd "$ROOT_DIR"
 
-exec bun ./src/entrypoints/cli.tsx "$@"
+# Restoration shim: run the CLI under Bun's inspector so the restored
+# TypeScript source can be breakpoint-debugged. Bun serves the debugger UI at
+# https://debug.bun.sh/ (or chrome://inspect); breakpoints map back to the .ts
+# files directly because the source is executed rather than bundled.
+#
+#   CLAUDE_RESTORED_INSPECT=1         -> --inspect on 127.0.0.1:6499 (attach when needed)
+#   CLAUDE_RESTORED_INSPECT=wait      -> --inspect-wait, pause until a debugger attaches
+#   CLAUDE_RESTORED_INSPECT=host:port -> --inspect=<host:port>
+#
+# BUN_OPTIONS is cleared here on purpose: this CLI spawns child processes with
+# its own executable, and an inherited --inspect would make every child trip
+# main.tsx's debugger guard. That guard only fires for the external build
+# channel, and this tree is patched to the internal one (see below).
+bun_invocation=(bun)
+if [ -n "${CLAUDE_RESTORED_INSPECT:-}" ]; then
+  unset BUN_OPTIONS
+  case "$CLAUDE_RESTORED_INSPECT" in
+    1) bun_invocation+=(--inspect=127.0.0.1:6499) ;;
+    wait) bun_invocation+=(--inspect-wait=127.0.0.1:6499) ;;
+    *) bun_invocation+=("--inspect=${CLAUDE_RESTORED_INSPECT}") ;;
+  esac
+fi
+bun_invocation+=(./src/entrypoints/cli.tsx)
+
+exec "${bun_invocation[@]}" "$@"
