@@ -216,7 +216,8 @@ OTEL_LOG_TOOL_CONTENT=1
 `--debug`、`DEBUG_SDK=1` 和 `ANTHROPIC_LOG=debug` 适合看控制流、request id、SDK 层诊断，但它们不适合在交互式 TUI 里直接刷完整 HTTP payload。为源码研究新增的路径是本地 API request observer：
 
 ```bash
-cd /Users/durui/Documents/claude-code-explainer/claude-code-sourcemap/lab/http-visualizer
+# 在仓库根目录执行
+cd lab/http-visualizer
 npm start
 ```
 
@@ -229,7 +230,8 @@ CLAUDE_CODE_HTTP_VISUALIZER_ENDPOINT=http://127.0.0.1:8788/ingest
 打开 `http://127.0.0.1:8788`，再运行：
 
 ```bash
-cd /Users/durui/Documents/claude-code-explainer/claude-code-sourcemap/restored-src
+# 在仓库根目录执行
+cd restored-src
 ./bin/claude
 ```
 
@@ -264,7 +266,8 @@ CLAUDE_CODE_GB_CLIENT_KEY=<growthbook-sdk-client-key>
 适合复现一次 query，从 debug log、profile、session log、diagnostics、stream-json 多路落盘：
 
 ```bash
-cd /Users/durui/Documents/claude-code-explainer/claude-code-sourcemap/restored-src
+# 在仓库根目录执行
+cd restored-src
 mkdir -p .claude/debug/full-trace
 
 DEBUG=1 \

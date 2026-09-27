@@ -427,7 +427,7 @@ function getInitialState(): State {
 }
 
 // AND ESPECIALLY HERE
-const STATE: State = getInitialState()
+const STATE: State = getInitialState() // 饿汉单例
 
 // Usage: 282 calls
 export function getSessionId(): SessionId {
@@ -496,7 +496,7 @@ const sessionSwitched = createSignal<[id: SessionId]>()
  */
 // Usage: 23 calls
 export function getAllowedChannels(): ChannelEntry[] {
-  return STATE.allowedChannels
+  return STATE.allowedChannels // e.g. slack
 }
 
 // Usage: 21 calls

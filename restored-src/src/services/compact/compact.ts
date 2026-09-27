@@ -436,7 +436,7 @@ export async function compactConversation(
       'tengu_compact_cache_prefix',
       true,
     )
-
+    // 压缩提示词
     const compactPrompt = getCompactPrompt(customInstructions)
     const summaryRequest = createUserMessage({
       content: compactPrompt,

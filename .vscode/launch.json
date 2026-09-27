@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Claude Code restored: direct launch",
+      "type": "bun",
+      "request": "launch",
+      "runtime": "${userHome}/.bun/bin/bun",
+      "runtimeArgs": [
+        "--env-file=${workspaceFolder}/restored-src/.claude/telemetry.env"
+      ],
+      "program": "${workspaceFolder}/restored-src/src/entrypoints/cli.tsx",
+      "cwd": "${workspaceFolder}/restored-src",
+      "env": {
+        "CLAUDE_CONFIG_DIR": "${workspaceFolder}/restored-src/.claude",
+        "CALLER_DIR": "${workspaceFolder}",
+        "USE_BUILTIN_RIPGREP": "0"
+      },
+      "args": [
+        "-p",
+        "首先，你有多少个工具，分别是哪些？利用某些工具，看看当前目录有些啥"
+      ]
+    }
+  ]
+}

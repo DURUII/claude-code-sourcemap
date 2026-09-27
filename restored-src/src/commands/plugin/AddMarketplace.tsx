@@ -26,6 +26,7 @@ type Props = {
   onAddComplete?: () => void | Promise<void>;
   cliMode?: boolean;
 };
+// 添加 plugin marketplace
 export function AddMarketplace({
   inputValue,
   setInputValue,

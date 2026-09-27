@@ -896,7 +896,7 @@ async function* queryLoop(
             }
             if (message.type === 'assistant') {
               assistantMessages.push(message)
-              // 工具
+              // 工具调用
               const msgToolUseBlocks = message.message.content.filter(
                 content => content.type === 'tool_use',
               ) as ToolUseBlock[]

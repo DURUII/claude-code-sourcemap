@@ -195,7 +195,7 @@ export function getAllBaseTools(): Tools {
   return [
     AgentTool,
     TaskOutputTool,
-    BashTool,
+    BashTool, // 完备性、组合性；但是 sed 可能有转义税和策略方差
     // Ant-native builds have bfs/ugrep embedded in the bun binary (same ARGV0
     // trick as ripgrep). When available, find/grep in Claude's shell are aliased
     // to these fast tools, so the dedicated Glob/Grep tools are unnecessary.

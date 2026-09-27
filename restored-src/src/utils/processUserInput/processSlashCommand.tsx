@@ -665,6 +665,7 @@ async function getMessagesForSlashCommand(commandName: string, args: string, set
           });
           try {
             const syntheticCaveatMessage = createSyntheticUserCaveatMessage();
+            // 动态导入模块
             const mod = await command.load();
             const result = await mod.call(args, context);
             if (result.type === 'skip') {

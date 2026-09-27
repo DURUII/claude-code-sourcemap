@@ -43,6 +43,7 @@ Bad (too long): "Reviewing full branch diff and AgentTool.tsx integration"
 Bad (branch name): "Analyzed adam/background-summary branch diff"`
 }
 
+// Agent Summary：runForkedAgent() 生成一条短的进度描述
 export function startAgentSummarization(
   taskId: string,
   agentId: AgentId,

@@ -91,17 +91,17 @@ async function isMarketplacePluginRelevant(
   }
   return false
 }
-
+// 候选
 const externalTips: Tip[] = [
   {
     id: 'new-user-warmup',
     content: async () =>
       `Start with small features or bug fixes, tell Claude to propose a plan, and verify its suggested edits`,
-    cooldownSessions: 3,
+    cooldownSessions: 3, // 是不是刚展示过
     async isRelevant() {
       const config = getGlobalConfig()
       return config.numStartups < 10
-    },
+    }, // 现在讲这句话有没有意义
   },
   {
     id: 'plan-mode-for-complex-tasks',
@@ -635,21 +635,21 @@ const externalTips: Tip[] = [
 const internalOnlyTips: Tip[] =
   process.env.USER_TYPE === 'ant'
     ? [
-        {
-          id: 'important-claudemd',
-          content: async () =>
-            '[ANT-ONLY] Use "IMPORTANT:" prefix for must-follow CLAUDE.md rules',
-          cooldownSessions: 30,
-          isRelevant: async () => true,
-        },
-        {
-          id: 'skillify',
-          content: async () =>
-            '[ANT-ONLY] Use /skillify at the end of a workflow to turn it into a reusable skill',
-          cooldownSessions: 15,
-          isRelevant: async () => true,
-        },
-      ]
+      {
+        id: 'important-claudemd',
+        content: async () =>
+          '[ANT-ONLY] Use "IMPORTANT:" prefix for must-follow CLAUDE.md rules',
+        cooldownSessions: 30,
+        isRelevant: async () => true,
+      },
+      {
+        id: 'skillify',
+        content: async () =>
+          '[ANT-ONLY] Use /skillify at the end of a workflow to turn it into a reusable skill',
+        cooldownSessions: 15,
+        isRelevant: async () => true,
+      },
+    ]
     : []
 
 function getCustomTips(): Tip[] {

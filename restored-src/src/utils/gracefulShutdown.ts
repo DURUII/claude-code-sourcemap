@@ -434,6 +434,7 @@ export async function gracefulShutdown(
   // hint would only appear after cleanup functions, hooks, and analytics
   // flush — which can take several seconds.
   cleanupTerminalModes()
+  // Resume this session with: claude--resume < 会话 ID >
   printResumeHint()
 
   // Flush session data first — this is the most critical cleanup. If the
@@ -503,7 +504,7 @@ export async function gracefulShutdown(
   // Lost analytics on slow networks are acceptable; a hanging exit is not.
   try {
     await Promise.race([
-      Promise.all([shutdown1PEventLogging(), shutdownDatadog()]),
+      Promise.all([shutdown1PEventLogging(), shutdownDatadog()]), // 给分析日志收尾留 500 毫秒
       sleep(500),
     ])
   } catch {

@@ -121,6 +121,7 @@ export const AskUserQuestionTool: Tool<InputSchema, Output> = buildTool({
       // guidance (they may not render the field at all).
       return ASK_USER_QUESTION_TOOL_PROMPT;
     }
+    // 见 main: previewFormat
     return ASK_USER_QUESTION_TOOL_PROMPT + PREVIEW_FEATURE_PROMPT[format];
   },
   get inputSchema(): InputSchema {

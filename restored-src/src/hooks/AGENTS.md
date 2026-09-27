@@ -1,0 +1,16 @@
+- `src/hooks/toolPermission/` 管 UI 侧工具权限请求；`src/hooks/notifs/` 管通知展示；`useInboxPoller` 轮询队友邮箱，`useMailboxBridge` 接内存邮箱。
+- Claude Code 事件 Hook 的名称见 `src/entrypoints/sdk/coreTypes.ts:HOOK_EVENTS`；配置结构见 `src/schemas/hooks.ts`；事件说明和执行逻辑在 `src/utils/hooks/`。
+- 一条事件 Hook 配置是「事件名 → matcher → handlers」。handler 可为 `command`、`prompt`、`agent`、`http`；不要把 handler 类型与事件名混为一谈。
+- 本机快照（2026-09-27）：`~/.claude/settings.json` 有 14 个事件、14 个 matcher、14 个 `command` handler，均调用 Vibe Island；这是安装状态，不代表源码只支持这 14 种。
+- `SessionStart`：会话启动、恢复或清空；本机 matcher 为 `startup|resume|clear`。
+- `SessionEnd`：会话结束。
+- `UserPromptSubmit`：用户提交提示词。
+- `PreToolUse` / `PostToolUse`：工具执行前 / 成功后。
+- `PermissionRequest`：出现工具权限请求。
+- `Notification`：Claude Code 发出通知。
+- `PreCompact` / `PostCompact`：压缩前 / 后；本机 matcher 为 `manual|auto`。
+- `Stop` / `StopFailure`：Claude 准备结束回复 / 这一轮因 API 错误结束。
+- `SubagentStart` / `SubagentStop`：子 Agent 开始 / 准备结束。
+- `TeammateIdle`：队友准备进入空闲状态。
+- 其余 13 个已定义但本机未配置：`PostToolUseFailure`、`PermissionDenied`、`Setup`、`TaskCreated`、`TaskCompleted`、`Elicitation`、`ElicitationResult`、`ConfigChange`、`WorktreeCreate`、`WorktreeRemove`、`InstructionsLoaded`、`CwdChanged`、`FileChanged`。
+- 配置了事件不等于每次运行都会触发：还要满足事件发生、matcher 命中及对应功能路径生效。

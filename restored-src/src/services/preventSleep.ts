@@ -98,6 +98,7 @@ function stopRestartInterval(): void {
   }
 }
 
+// 忙碌时暂时阻止系统因空闲而睡眠，Amphetamine 安非他名也类似
 function spawnCaffeinate(): void {
   // Only run on macOS
   if (process.platform !== 'darwin') {

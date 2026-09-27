@@ -845,8 +845,10 @@ export async function main() {
     return 'cli';
   })();
   setClientType(clientType);
+  // AskUserQuestion 工具使用：不切换 schema 但是切换 prompt / validateInput
   const previewFormat = process.env.CLAUDE_CODE_QUESTION_PREVIEW_FORMAT;
   if (previewFormat === 'markdown' || previewFormat === 'html') {
+    // STATE 对象
     setQuestionPreviewFormat(previewFormat);
   } else if (!clientType.startsWith('sdk-') &&
   // Desktop and CCR pass previewFormat via toolConfig; when the feature is
@@ -857,7 +859,7 @@ export async function main() {
 
   // Tag sessions created via `claude remote-control` so the backend can identify them
   if (process.env.CLAUDE_CODE_ENVIRONMENT_KIND === 'bridge') {
-    setSessionSource('remote-control');
+    setSessionSource('remote-control'); // 手机或网页远程控制你电脑上的 Claude Code
   }
   profileCheckpoint('main_client_type_determined');
 
@@ -906,7 +908,7 @@ async function run(): Promise<CommanderCommand> {
     sortSubcommands: true;
     sortOptions: true;
   } {
-    const getOptionSortKey = (opt: Option): string => opt.long?.replace(/^--/, '') ?? opt.short?.replace(/^-/, '') ?? '';
+    const getOptionSortKey = (opt: Option): string => opt.long?.replace(/^--/, '') ?? opt.short?.replace(/^-/, '') ?? ''; // 箭头函数
     return Object.assign({
       sortSubcommands: true,
       sortOptions: true
@@ -914,7 +916,8 @@ async function run(): Promise<CommanderCommand> {
       compareOptions: (a: Option, b: Option) => getOptionSortKey(a).localeCompare(getOptionSortKey(b))
     });
   }
-  const program = new CommanderCommand().configureHelp(createSortedHelpConfig()).enablePositionalOptions();
+  // 这是一种 https://github.com/tj/commander.js/ 写法
+  const program = new CommanderCommand().configureHelp(createSortedHelpConfig()).enablePositionalOptions(); // fluent API
   profileCheckpoint('run_commander_initialized');
 
   // Use preAction hook to run initialization only when executing a command,
@@ -1018,7 +1021,8 @@ async function run(): Promise<CommanderCommand> {
   // `mcp` and `add` as paths, then choked on --transport as an unknown
   // top-level option. Single-value + collect accumulator means each
   // --plugin-dir takes exactly one arg; repeat the flag for multiple dirs.
-  .option('--plugin-dir <path>', 'Load plugins from a directory for this session only (repeatable: --plugin-dir A --plugin-dir B)', (val: string, prev: string[]) => [...prev, val], [] as string[]).option('--disable-slash-commands', 'Disable all skills', () => true).option('--chrome', 'Enable Claude in Chrome integration').option('--no-chrome', 'Disable Claude in Chrome integration').option('--file <specs...>', 'File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)').action(async (prompt, options) => {
+    .option('--plugin-dir <path>', 'Load plugins from a directory for this session only (repeatable: --plugin-dir A --plugin-dir B)', (val: string, prev: string[]) => [...prev, val], [] as string[]).option('--disable-slash-commands', 'Disable all skills', () => true).option('--chrome', 'Enable Claude in Chrome integration').option('--no-chrome', 'Disable Claude in Chrome integration').option('--file <specs...>', 'File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)')
+    .action(async (prompt, options) => {
     profileCheckpoint('action_handler_start');
 
     // --bare = one-switch minimal mode. Sets SIMPLE so all the existing
@@ -2839,7 +2843,7 @@ async function run(): Promise<CommanderCommand> {
       profileCheckpoint('before_print_import');
       const {
         runHeadless
-      } = await import('src/cli/print.js');
+      } = await import('src/cli/print.js'); // 非交互模式
       profileCheckpoint('after_print_import');
       void runHeadless(inputPrompt, () => headlessStore.getState(), headlessStore.setState, commandsHeadless, tools, sdkMcpConfigs, agentDefinitions.activeAgents, {
         continue: options.continue,
@@ -3146,7 +3150,7 @@ async function run(): Promise<CommanderCommand> {
           resume_duration_ms: Math.round(performance.now() - resumeStart)
         });
         resumeSucceeded = true;
-        // 交互式
+        // 交互模式：新对话、继续对话、恢复对话
         await launchRepl(root, {
           getFpsMetrics,
           stats,
@@ -3905,8 +3909,7 @@ async function run(): Promise<CommanderCommand> {
     return program;
   }
 
-  // claude mcp
-
+  // claude mcp 命令模式
   const mcp = program.command('mcp').description('Configure and manage MCP servers').configureHelp(createSortedHelpConfig()).enablePositionalOptions();
   mcp.command('serve').description(`Start the Claude Code MCP server`).option('-d, --debug', 'Enable debug mode', () => true).option('--verbose', 'Override verbose mode setting from config', () => true).action(async ({
     debug,
