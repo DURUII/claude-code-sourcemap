@@ -121,6 +121,8 @@ export function getSuggestionSuppressReason(appState: AppState): string | null {
 /**
  * Shared guard + generation logic used by both CLI TUI and SDK push paths.
  * Returns the suggestion with metadata, or null if suppressed/filtered.
+ * 
+ * follow-up 建议
  */
 export async function tryGenerateSuggestion(
   abortController: AbortController,

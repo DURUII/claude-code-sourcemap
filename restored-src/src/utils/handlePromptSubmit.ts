@@ -309,7 +309,7 @@ export async function handlePromptSubmit(
       return
     }
   }
-
+  // dispatching 或者 running，而不是 idle 状态，比如工具批次结果收集中、processUserInput 处理期间、远程对话前台任务
   if (queryGuard.isActive || isExternalLoading) {
     // Only allow prompt and bash mode commands to be queued
     if (mode !== 'prompt' && mode !== 'bash') {

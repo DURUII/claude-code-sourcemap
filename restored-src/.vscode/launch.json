@@ -18,6 +18,13 @@
       "runtimeExecutable": "bun",
       "runtimeArgs": ["--inspect", "run", "${relativeFile}"],
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Claude Code restored: attach to interactive REPL",
+      "type": "bun",
+      "request": "attach",
+      "url": "ws://127.0.0.1:6499/",
+      "stopOnEntry": false
     }
   ]
 }

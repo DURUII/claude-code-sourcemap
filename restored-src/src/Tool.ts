@@ -336,6 +336,7 @@ export type ToolResult<T> = {
   }
 }
 
+// 函数形状
 export type ToolCallProgress<P extends ToolProgressData = ToolProgressData> = (
   progress: ToolProgress<P>,
 ) => void
@@ -361,6 +362,7 @@ export function findToolByName(tools: Tools, name: string): Tool | undefined {
   return tools.find(t => toolMatchesName(t, name))
 }
 
+// 对象形状，
 export type Tool<
   Input extends AnyObject = AnyObject,
   Output = unknown,

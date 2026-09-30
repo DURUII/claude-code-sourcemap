@@ -12,12 +12,12 @@ import {
   hashPastedText,
   retrievePastedText,
   storePastedText,
-} from './utils/pasteStore.js'
+} from './utils/pasteStore.js' // 粘贴缓存
 import { sleep } from './utils/sleep.js'
 import { jsonParse, jsonStringify } from './utils/slowOperations.js'
 
 const MAX_HISTORY_ITEMS = 100
-const MAX_PASTED_CONTENT_LENGTH = 1024
+const MAX_PASTED_CONTENT_LENGTH = 1024 // 另存成 paste-cache/<hash>.txt
 
 /**
  * Stored paste content - either inline content or a hash reference to paste store.
@@ -107,6 +107,7 @@ async function* makeLogEntryReader(): AsyncGenerator<LogEntry> {
   const currentSession = getSessionId()
 
   // Start with entries that have yet to be flushed to disk
+  // 从末尾开始读
   for (let i = pendingEntries.length - 1; i >= 0; i--) {
     yield pendingEntries[i]!
   }
@@ -117,6 +118,7 @@ async function* makeLogEntryReader(): AsyncGenerator<LogEntry> {
   try {
     for await (const line of readLinesReverse(historyPath)) {
       try {
+        // 反序列化：把 字符串 解析为 LogEntry
         const entry = deserializeLogEntry(line)
         // removeLastFromHistory slow path: entry was flushed before removal,
         // so filter here so both getHistory (Up-arrow) and makeHistoryReader
@@ -188,6 +190,7 @@ export async function* getTimestampedHistory(): AsyncGenerator<TimestampedHistor
  * entries are reordered within that window, not beyond it.
  */
 export async function* getHistory(): AsyncGenerator<HistoryEntry> {
+  // 用于过滤当前项目/会话的历史提示词
   const currentProject = getProjectRoot()
   const currentSession = getSessionId()
   const otherSessionEntries: LogEntry[] = []
@@ -196,6 +199,7 @@ export async function* getHistory(): AsyncGenerator<HistoryEntry> {
   for await (const entry of makeLogEntryReader()) {
     // Skip malformed entries (corrupted file, old format, or invalid JSON structure)
     if (!entry || typeof entry.project !== 'string') continue
+    // 跳过其他项目
     if (entry.project !== currentProject) continue
 
     if (entry.sessionId === currentSession) {
@@ -278,6 +282,7 @@ async function logEntryToHistoryEntry(entry: LogEntry): Promise<HistoryEntry> {
   }
 }
 
+// 还没写磁盘的 prompt，异步追加到 history.jsonl
 let pendingEntries: LogEntry[] = []
 let isWriting = false
 let currentFlushPromise: Promise<void> | null = null

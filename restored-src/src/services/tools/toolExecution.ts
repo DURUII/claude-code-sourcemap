@@ -1204,6 +1204,7 @@ async function checkPermissionsAndCallTool(
     callInput = processedInput
   }
   try {
+    // 等待工具运行
     const result = await tool.call(
       callInput,
       {

@@ -1,0 +1,116 @@
+graph TB
+%% === STYLES ===
+classDef core fill:#1E90FF,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+classDef state fill:#FFD700,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+classDef api fill:#9ACD32,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+classDef transport fill:#FF69B4,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+classDef utility fill:#DA70D6,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+classDef external fill:#FFB6C1,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+
+%% === USERS ===
+User(("User<br/>Interacts with UI"))
+
+%% === CORE RUNTIME & UI LAYER ===
+subgraph "Core Runtime & UI Layer"
+  App["<App><br/>Top-level wrapper"]:::core
+  InteractiveHelpers["<InteractiveHelpers><br/>Manages dialogs"]:::core
+  Dialogs["<Dialogs><br/>Modular dialogs"]:::core
+  Views["<Views><br/>Different views"]:::core
+end
+
+User -->|"interacts with"| App
+App -->|"renders"| InteractiveHelpers
+App -->|"renders"| Dialogs
+App -->|"renders"| Views
+
+%% === STATE MANAGEMENT LAYER ===
+subgraph "State Management Layer"
+  AppStateStore["AppStateStore<br/>Centralized state"]:::state
+  AppState["AppState<br/>Session, UI, environment"]:::state
+  AppStateProvider["AppStateProvider<br/>Context provider"]:::state
+  StatsProvider["StatsProvider<br/>Context provider"]:::state
+  FpsMetricsProvider["FpsMetricsProvider<br/>Context provider"]:::state
+end
+
+App -->|"uses"| AppStateProvider
+App -->|"uses"| StatsProvider
+App -->|"uses"| FpsMetricsProvider
+AppStateProvider -->|"provides state"| AppStateStore
+
+%% === COMMAND & TOOL ORCHESTRATION ===
+subgraph "Command & Tool Orchestration"
+  Commands["<Commands><br/>Modular command implementations"]:::core
+  Tools["<Tools><br/>Modular tools for interactions"]:::core
+end
+
+App -->|"dispatches commands"| Commands
+App -->|"invokes tools"| Tools
+
+%% === SESSION & CONVERSATION MANAGEMENT ===
+subgraph "Session & Conversation Management"
+  SessionState["Session State<br/>Tracks session info"]:::core
+  HistoryTranscript["History & Transcript<br/>Manages conversation history"]:::core
+end
+
+App -->|"manages session"| SessionState
+App -->|"manages history"| HistoryTranscript
+
+%% === API & EXTERNAL SERVICE LAYER ===
+subgraph "API & External Service Layer"
+  APIClients["<API Clients><br/>Modular API wrappers"]:::api
+  TransportLayer["<Transport Layer><br/>Session communication"]:::transport
+end
+
+App -->|"uses API clients"| APIClients
+App -->|"uses transport layer"| TransportLayer
+
+%% === FEATURE FLAGS & CONDITIONAL LOADING ===
+subgraph "Feature Flags & Conditional Loading"
+  FeatureGating["<Feature Gating><br/>Dynamic loading based on flags"]:::core
+  LazyLoading["<Lazy Loading><br/>Dynamic imports for heavy modules"]:::core
+end
+
+App -->|"checks feature flags"| FeatureGating
+App -->|"loads modules lazily"| LazyLoading
+
+%% === CONFIGURATION & ENVIRONMENT ===
+subgraph "Configuration & Environment"
+  GlobalConfig["<Global Config><br/>Persistent user settings"]:::utility
+  EnvironmentHandling["<Environment Handling><br/>Controls feature flags"]:::utility
+end
+
+App -->|"uses global config"| GlobalConfig
+App -->|"handles environment"| EnvironmentHandling
+
+%% === UTILITY & HELPER LAYERS ===
+subgraph "Utility & Helper Layers"
+  CommonUtilities["<Common Utilities><br/>File system helpers, logging"]:::utility
+  CustomHooks["<Hooks & Contexts><br/>Custom hooks for behaviors"]:::utility
+end
+
+App -->|"uses common utilities"| CommonUtilities
+App -->|"uses custom hooks"| CustomHooks
+
+%% === EXTERNAL DEPENDENCIES ===
+subgraph "External Dependencies"
+  APIs["<APIs><br/>Cost tracking, file management, etc."]:::external
+  Transports["<Transports><br/>WebSocket, SSE, etc."]:::external
+end
+
+APIClients -->|"interacts with"| APIs
+TransportLayer -->|"uses"| Transports
+
+%% === DATA & CONTROL FLOW ===
+subgraph "Data & Control Flow"
+  Initialization["<Initialization><br/>Bootstrapping the app"]:::core
+  UserInteraction["<User Interaction><br/>Processing user inputs"]:::core
+  ConversationManagement["<Conversation Management><br/>Managing message flow"]:::core
+  ExternalCommunication["<External Communication><br/>Bidirectional streaming"]:::core
+  CostTracking["<Cost Tracking><br/>Tracking usage and limits"]:::core
+end
+
+App -->|"initializes"| Initialization
+App -->|"handles user interaction"| UserInteraction
+App -->|"manages conversation"| ConversationManagement
+App -->|"handles external communication"| ExternalCommunication
+App -->|"tracks costs"| CostTracking

@@ -718,11 +718,13 @@ export async function tailFile(
  * Reads the file backwards in chunks to avoid loading the entire file into memory.
  * @param path - The path to the file to read
  * @returns An async generator that yields lines in reverse order
+ * 逐条，按照「项目」（而不是「会话」）来分 100 条，但代价是如果当前项目的输入很稀疏，虽然是分块读取，仍可能往前扫描很远。
  */
 export async function* readLinesReverse(
   path: string,
 ): AsyncGenerator<string, void, undefined> {
   const CHUNK_SIZE = 1024 * 4
+  // 从末尾往前每次读一小块（4 KiB），遇到换行符才拼出完整的一行
   const fileHandle = await open(path, 'r')
   try {
     const stats = await fileHandle.stat()

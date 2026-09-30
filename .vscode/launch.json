@@ -20,6 +20,13 @@
         "-p",
         "首先，你有多少个工具，分别是哪些？利用某些工具，看看当前目录有些啥"
       ]
+    },
+    {
+      "name": "Claude Code restored: attach to interactive REPL",
+      "type": "bun",
+      "request": "attach",
+      "url": "ws://127.0.0.1:6499/",
+      "stopOnEntry": false
     }
   ]
 }

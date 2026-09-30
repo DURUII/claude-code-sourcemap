@@ -916,7 +916,7 @@ async function run(): Promise<CommanderCommand> {
       compareOptions: (a: Option, b: Option) => getOptionSortKey(a).localeCompare(getOptionSortKey(b))
     });
   }
-  // 这是一种 https://github.com/tj/commander.js/ 写法
+  // 这是一种 https://github.com/tj/commander.js/ 写法（流式接口）
   const program = new CommanderCommand().configureHelp(createSortedHelpConfig()).enablePositionalOptions(); // fluent API
   profileCheckpoint('run_commander_initialized');
 
@@ -3904,6 +3904,7 @@ async function run(): Promise<CommanderCommand> {
   const isCcUrl = process.argv.some(a => a.startsWith('cc://') || a.startsWith('cc+unix://'));
   if (isPrintMode && !isCcUrl) {
     profileCheckpoint('run_before_parse');
+    // 解析参数并调用 action
     await program.parseAsync(process.argv);
     profileCheckpoint('run_after_parse');
     return program;

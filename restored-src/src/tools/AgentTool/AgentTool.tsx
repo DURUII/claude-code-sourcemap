@@ -6,12 +6,12 @@ import { getQuerySourceForAgent } from 'src/utils/promptCategory.js';
 import { z } from 'zod/v4';
 import { clearInvokedSkillsForAgent, getSdkAgentProgressSummariesEnabled } from '../../bootstrap/state.js';
 import { enhanceSystemPromptWithEnvDetails, getSystemPrompt } from '../../constants/prompts.js';
-import { isCoordinatorMode } from '../../coordinator/coordinatorMode.js';
-import { startAgentSummarization } from '../../services/AgentSummary/agentSummary.js';
+import { isCoordinatorMode } from '../../coordinator/coordinatorMode.js'; // 主 agent 分工模式
+import { startAgentSummarization } from '../../services/AgentSummary/agentSummary.js'; // 在协调模式、fork 子 agent 模式等使用，禁止调用工具，progress.summary 进度展示
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js';
 import { type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, logEvent } from '../../services/analytics/index.js';
-import { clearDumpState } from '../../services/api/dumpPrompts.js';
-import { completeAgentTask as completeAsyncAgent, createActivityDescriptionResolver, createProgressTracker, enqueueAgentNotification, failAgentTask as failAsyncAgent, getProgressUpdate, getTokenCountFromTracker, isLocalAgentTask, killAsyncAgent, registerAgentForeground, registerAsyncAgent, unregisterAgentForeground, updateAgentProgress as updateAsyncAgentProgress, updateProgressFromMessage } from '../../tasks/LocalAgentTask/LocalAgentTask.js';
+import { clearDumpState } from '../../services/api/dumpPrompts.js'; // 
+import { completeAgentTask as completeAsyncAgent, createActivityDescriptionResolver, createProgressTracker, enqueueAgentNotification, failAgentTask as failAsyncAgent, getProgressUpdate, getTokenCountFromTracker, isLocalAgentTask, killAsyncAgent, registerAgentForeground, registerAsyncAgent, unregisterAgentForeground, updateAgentProgress as updateAsyncAgentProgress, updateProgressFromMessage } from '../../tasks/LocalAgentTask/LocalAgentTask.js'; // 把子 agent 当作可追踪的任务来管理，登记、结束、通知
 import { checkRemoteAgentEligibility, formatPreconditionError, getRemoteTaskSessionUrl, registerRemoteAgentTask } from '../../tasks/RemoteAgentTask/RemoteAgentTask.js';
 import { assembleToolPool } from '../../tools.js';
 import { asAgentId } from '../../types/ids.js';
@@ -130,7 +130,7 @@ type InputSchema = ReturnType<typeof inputSchema>;
 // subagent_type is optional; call() defaults it to general-purpose when the
 // fork gate is off, or routes to the fork path when the gate is on.
 type AgentToolInput = z.infer<ReturnType<typeof baseInputSchema>> & {
-  name?: string;
+  name?: string; // ?代表可选，readonly 代表只读
   team_name?: string;
   mode?: z.infer<ReturnType<typeof permissionModeSchema>>;
   isolation?: 'worktree' | 'remote';
@@ -236,7 +236,7 @@ export const AgentTool = buildTool({
   get outputSchema(): OutputSchema {
     return outputSchema();
   },
-  async call({
+  async call({ // 入口
     prompt,
     subagent_type,
     description,

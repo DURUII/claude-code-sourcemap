@@ -553,7 +553,7 @@ async function processUserInputBase(
   if (
     inputString !== null &&
     !effectiveSkipSlash &&
-    inputString.startsWith('/') // 处理 slash 命令
+    inputString.startsWith('/') // 处理 slash 命令，交给 processSlashCommand 解析和查找
   ) {
     const { processSlashCommand } = await import('./processSlashCommand.js')
     const slashResult = await processSlashCommand(

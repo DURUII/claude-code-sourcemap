@@ -53,3 +53,11 @@ tool_data.json
 /.agents/skills
 /.claude/skills
 /.lmnr
+/docs
+/restored-src/docs
+/lab/pi-claude-computer-use/
+/restored-src/.probe
+/restored-src/tmp
+/lab/source-reading-dashboard
+/lab/architecture-views
+lab/docs-lint.mjs

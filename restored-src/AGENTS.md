@@ -2,6 +2,8 @@ This repo is restored-src of claude v2.1.88 (2026-04-01).
 
 ## 研究对象为软件设计模式
 
+用户了解 SICP 函数式编程，Java 面向对象程序设计和 Go Concurrency Programming，但是对于当前 TS 项目，对架构、软件设计模式、语言特性不够了解。
+
 话题：工具、CUA、打断注入、fork/subagent/team/coordinate、权限、上下文管理和压缩
 
 ## Notes

@@ -279,7 +279,7 @@ export async function* runAgent({
   forkContextMessages?: Message[]
   querySource: QuerySource
   override?: {
-    userContext?: { [k: string]: string }
+    userContext?: { [k: string]: string } // 索引签名
     systemContext?: { [k: string]: string }
     systemPrompt?: SystemPrompt
     abortController?: AbortController

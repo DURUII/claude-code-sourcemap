@@ -1067,6 +1067,7 @@ function runHeadlessStreaming(
       newMode === (feature('TRANSCRIPT_CLASSIFIER') && 'auto') ||
       newMode === 'dontAsk'
     ) {
+      // 对外发送，如 stream-json verbose 发给 SDK
       output.enqueue({
         type: 'system',
         subtype: 'status',
@@ -1128,6 +1129,7 @@ function runHeadlessStreaming(
   // when rate limits reset. The upstream emitStatusChange already deduplicates via isEqual.
   const rateLimitListener = (limits: ClaudeAILimits) => {
     const rateLimitInfo = toSDKRateLimitInfo(limits)
+    // 429 错误，用量限制
     if (rateLimitInfo) {
       output.enqueue({
         type: 'rate_limit_event',

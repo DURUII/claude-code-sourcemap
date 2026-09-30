@@ -3488,6 +3488,7 @@ export function REPL({
 
     // Ensure SessionStart hook context is available before the first API call.
     await awaitPendingHooks();
+    // 用户在输入框提交时，传入的是 input
     await handlePromptSubmit({
       input,
       helpers,
@@ -3860,6 +3861,7 @@ export function REPL({
   // Process queued commands when query completes and queue has items
 
   const executeQueuedInput = useCallback(async (queuedCommands: QueuedCommand[]) => {
+    // 队列处理器取出提示词时，传入的是 queuedCommands
     await handlePromptSubmit({
       helpers: {
         setCursorOffset: () => {},
